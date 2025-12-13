@@ -1,0 +1,7 @@
+{
+  "name": "@workspace/common",
+  "dependencies": {
+    "@casl/ability": "^6.7.3"
+  }
+
+}
