@@ -30,16 +30,16 @@ export const users = pgTable('users', {
 export const userOrganizationAccess = pgTable('user_organization_access', {
 	userId: integer('user_id').references(() => users.id).notNull(),
 	organizationId: integer('organization_id').references(() => organizations.id).notNull(),
-}, (t) => ({
+}, (t) => ([{
 	pk: primaryKey({ columns: [t.userId, t.organizationId] }),
-}));
+}]));
 
 export const userClinicAccess = pgTable('user_clinic_access', {
 	userId: integer('user_id').references(() => users.id).notNull(),
 	clinicId: integer('clinic_id').references(() => clinics.id).notNull(),
-}, (t) => ({
+}, (t) => ([{
 	pk: primaryKey({ columns: [t.userId, t.clinicId] }),
-}));
+}]));
 
 export const usersRelations = relations(users, ({ many }) => ({
 	orgAccess: many(userOrganizationAccess),
