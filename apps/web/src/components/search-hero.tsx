@@ -28,14 +28,14 @@ export function SearchHero() {
 				</h1>
 
 				<Card className="max-w-4xl mx-auto shadow-lg">
-					<CardContent className="p-6 md:p-8">
+					<CardContent className="p-4 md:p-6">
 						<div className="flex flex-col md:flex-row gap-4 items-end">
 							<div className="flex-1 w-full">
 								<label
 									htmlFor="specialty-selector"
 									className="text-sm font-medium text-slate-700 mb-2"
 								>
-									Specialty
+									Especialidade
 								</label>
 								<div className="relative w-full h-12">
 									<Select>
@@ -43,7 +43,7 @@ export function SearchHero() {
 											id="specialty-selector"
 											className="bg-white border-slate-300 w-full data-[size=default]:h-full"
 										>
-											<SelectValue placeholder="Select a specialty" />
+											<SelectValue placeholder="Selecione a especialidade" />
 										</SelectTrigger>
 										<SelectContent>
 											{specialties.map((specialty) => (
@@ -60,13 +60,13 @@ export function SearchHero() {
 							</div>
 							<div className="flex-1 w-full">
 								<span className="block text-sm font-medium text-slate-700 mb-2">
-									City / Location
+									Cidade, Estado
 								</span>
 								<div className="relative">
 									<MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
 									<Input
 										type="text"
-										placeholder="Enter city or zip code"
+										placeholder="e.g.: Pouso Alegre, Minas Gerais"
 										className="pl-10 h-12 bg-white border-slate-300"
 									/>
 								</div>
