@@ -1,8 +1,8 @@
-import { pgTable, serial, text, boolean, timestamp, primaryKey, integer, index } from 'drizzle-orm/pg-core';
+import { pgTable, text, boolean, timestamp, primaryKey, integer, index, uuid } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 export const organizations = pgTable('organizations', {
-	id: serial('id').primaryKey(),
+	id: uuid('id').primaryKey().defaultRandom(),
 	name: text('name').notNull(),
 	status: text('status').default('active'), // 'active', 'defaulting'
 	plan: integer('plan').default(0), // 0 -> 'silver', 1 -> 'gold'
@@ -10,7 +10,7 @@ export const organizations = pgTable('organizations', {
 });
 
 export const clinics = pgTable('clinics', {
-	id: serial('id').primaryKey(),
+	id: uuid('id').primaryKey().defaultRandom(),
 	name: text('name').notNull(),
 	address: text('address'),
 	createdAt: timestamp('created_at').defaultNow(),
@@ -114,14 +114,14 @@ export const accountRelations = relations(account, ({ one }) => ({
 
 export const userOrganizationAccess = pgTable('user_organization_access', {
 	userId: text('user_id').references(() => user.id).notNull(),
-	organizationId: integer('organization_id').references(() => organizations.id).notNull(),
+	organizationId: uuid('organization_id').references(() => organizations.id).notNull(),
 }, (t) => ([{
 	pk: primaryKey({ columns: [t.userId, t.organizationId] }),
 }]));
 
 export const userClinicAccess = pgTable('user_clinic_access', {
 	userId: text('user_id').references(() => user.id).notNull(),
-	clinicId: integer('clinic_id').references(() => clinics.id).notNull(),
+	clinicId: uuid('clinic_id').references(() => clinics.id).notNull(),
 }, (t) => ([{
 	pk: primaryKey({ columns: [t.userId, t.clinicId] }),
 }]));

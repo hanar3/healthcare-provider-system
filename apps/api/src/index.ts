@@ -7,7 +7,6 @@ import { organizationsController } from './modules/organizations';
 
 const betterAuthView = (context: Context) => {
 	const BETTER_AUTH_ACCEPT_METHODS = ["POST", "GET"]
-	// validate request method
 	if (BETTER_AUTH_ACCEPT_METHODS.includes(context.request.method)) {
 		return auth.handler(context.request);
 	} else {
@@ -15,7 +14,6 @@ const betterAuthView = (context: Context) => {
 	}
 }
 
-// This is where we will eventually import our routes
 const app = new Elysia()
 	.use(cors())
 	.use(swagger())
@@ -27,5 +25,4 @@ const app = new Elysia()
 
 console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`);
 
-// EXPORT THE TYPE for the Frontend to use!
 export type App = typeof app;
