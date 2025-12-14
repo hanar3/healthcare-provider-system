@@ -4,11 +4,13 @@ import { FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useForm } from "@tanstack/react-form";
 import { authClient } from "@/lib/auth-client";
+import { useNavigate } from "@tanstack/react-router";
 
 export function LoginForm({
 	className,
 	...props
 }: React.ComponentProps<"form">) {
+	const navigate = useNavigate();
 	const form = useForm({
 		defaultValues: {
 			email: "",
@@ -21,7 +23,9 @@ export function LoginForm({
 				password: value.password,
 			});
 
-			console.log(value);
+			navigate({
+				to: "/dashboard",
+			});
 		},
 	});
 
