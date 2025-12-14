@@ -7,11 +7,23 @@ import { ColumnDef } from "@tanstack/react-table";
 
 type Organization = OrganizationsGet["list"][0];
 
+const formatCNPJ = (v: string) =>
+	v
+		.replace(/\D/g, "")
+		.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
+
 const plans = ["Prata", "Ouro"];
 export const columns: ColumnDef<Organization>[] = [
 	{
 		accessorKey: "name",
 		header: "Nome",
+	},
+	{
+		accessorKey: "govId",
+		header: "CNPJ",
+		cell: (info) => {
+			return formatCNPJ(info.getValue<string>());
+		},
 	},
 	{
 		accessorKey: "status",

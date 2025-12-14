@@ -2,11 +2,13 @@ import { Elysia, t } from 'elysia';
 import { count, eq } from 'drizzle-orm';
 import { db } from '../db';
 import { organizations } from '../db/schema';
+import { decrypt, encrypt } from '../lib/crypto';
 
 const createOrgDTO = t.Object({
 	name: t.String(),
 	status: t.Optional(t.String()),
 	plan: t.Optional(t.Integer()),
+	govId: t.Optional(t.String())
 });
 
 const updateOrgDTO = t.Partial(createOrgDTO);
@@ -16,8 +18,23 @@ export const organizationsController = new Elysia({ prefix: '/organizations' })
 		const data = await db.select().from(organizations).offset(page * limit).limit(limit);
 		const [total] = await db.select({ count: count() }).from(organizations);
 
+
+		const list = await Promise.all(data.map(async d => {
+			if (!d.govId) return d;
+
+			const parts = d.govId.split(":");
+			if (parts.length !== 2) return d;
+
+			const [iv, data] = parts as [string, string];
+			const decrypted = await decrypt({ iv, data });
+			return {
+				...d,
+				govId: decrypted,
+			}
+		}))
+
 		return {
-			list: data,
+			list,
 			total: total?.count ?? 0,
 		}
 	}, {
@@ -51,7 +68,16 @@ export const organizationsController = new Elysia({ prefix: '/organizations' })
 	.post(
 		'/',
 		async ({ body }) => {
-			const result = await db.insert(organizations).values(body).returning();
+
+			const payload = {
+				...body
+			};
+			if (payload.govId) {
+				const encryptedGovId = await encrypt(payload.govId);
+				payload.govId = `${encryptedGovId.iv}:${encryptedGovId.data}`;
+			}
+
+			const result = await db.insert(organizations).values(payload).returning();
 			return result[0];
 		},
 		{

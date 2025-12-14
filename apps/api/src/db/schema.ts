@@ -6,6 +6,7 @@ export const organizations = pgTable('organizations', {
 	name: text('name').notNull(),
 	status: text('status').default('active'), // 'active', 'defaulting'
 	plan: integer('plan').default(0), // 0 -> 'silver', 1 -> 'gold'
+	govId: text('gov_id'), // encrypted gov_id
 	createdAt: timestamp('created_at').defaultNow(),
 });
 
