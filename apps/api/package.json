@@ -7,6 +7,7 @@
     "dev": "bun run --watch src/index.ts"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.1.0",
     "@types/bun": "latest",
     "drizzle-kit": "^0.31.8"
   },

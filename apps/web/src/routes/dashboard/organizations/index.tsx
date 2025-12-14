@@ -1,17 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, Upload } from "lucide-react";
+import { organizationsQuery } from "./-queries";
+import { OrganizationsDataTable } from "./-components/data-table";
 
 export const Route = createFileRoute("/dashboard/organizations/")({
 	component: RouteComponent,
+	loader: async ({ context }) =>
+		context.queryClient.ensureQueryData(organizationsQuery(0, 10)),
 	staticData: {
-		breadcrumb: ({
-			params,
-			loaderData,
-		}: {
-			params: Record<string, string>;
-			loaderData: any;
-		}) => {
+		breadcrumb: () => {
 			return "Empresas";
 		},
 	},
@@ -40,6 +38,7 @@ function RouteComponent() {
 					</Button>
 				</div>
 			</div>
+			<OrganizationsDataTable />
 		</div>
 	);
 }
