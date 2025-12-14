@@ -56,7 +56,7 @@ const items = [
 export function AppSidebar() {
 	return (
 		<Sidebar>
-			<SidebarHeader className="border-b border-border">
+			<SidebarHeader className="border-b p-2">
 				<div className="flex items-center gap-2">
 					<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
 						<Activity className="h-5 w-5 text-primary-foreground" />

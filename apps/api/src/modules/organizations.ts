@@ -1,7 +1,7 @@
 import { Elysia, t } from 'elysia';
-import { eq } from 'drizzle-orm';
-import { db } from '../db'; // Adjust path to your Drizzle DB instance
-import { organizations } from '../db/schema'; // Adjust path to schema
+import { count, eq } from 'drizzle-orm';
+import { db } from '../db';
+import { organizations } from '../db/schema';
 
 const createOrgDTO = t.Object({
 	name: t.String(),
@@ -12,8 +12,19 @@ const createOrgDTO = t.Object({
 const updateOrgDTO = t.Partial(createOrgDTO);
 
 export const organizationsController = new Elysia({ prefix: '/organizations' })
-	.get('/', async () => {
-		return await db.select().from(organizations);
+	.get('/', async ({ query: { page, limit } }) => {
+		const data = await db.select().from(organizations).offset(page * limit).limit(limit);
+		const [total] = await db.select({ count: count() }).from(organizations);
+
+		return {
+			list: data,
+			total: total?.count ?? 0,
+		}
+	}, {
+		query: t.Object({
+			page: t.Number(),
+			limit: t.Number({ maximum: 100 })
+		})
 	})
 
 	.get(
@@ -32,7 +43,7 @@ export const organizationsController = new Elysia({ prefix: '/organizations' })
 		},
 		{
 			params: t.Object({
-				id: t.Numeric(),
+				id: t.String(),
 			}),
 		}
 	)
@@ -65,7 +76,7 @@ export const organizationsController = new Elysia({ prefix: '/organizations' })
 		},
 		{
 			params: t.Object({
-				id: t.Numeric(),
+				id: t.String(),
 			}),
 			body: updateOrgDTO,
 		}
@@ -87,7 +98,7 @@ export const organizationsController = new Elysia({ prefix: '/organizations' })
 		},
 		{
 			params: t.Object({
-				id: t.Numeric(),
+				id: t.String(),
 			}),
 		}
 	);

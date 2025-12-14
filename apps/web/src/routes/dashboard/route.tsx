@@ -1,8 +1,9 @@
 import { AppSidebar } from "@/components/app-sidebar";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { AbilityProvider } from "@/context/casl-context";
 import { authClient } from "@/lib/auth-client";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { Breadcrumbs } from "./components/breadcrumbs";
 
 export const Route = createFileRoute("/dashboard")({
 	component: RouteComponent,
@@ -14,6 +15,10 @@ export const Route = createFileRoute("/dashboard")({
 			});
 		}
 	},
+
+	staticData: {
+		breadcrumb: () => "Dashboard",
+	},
 });
 
 function RouteComponent() {
@@ -21,9 +26,14 @@ function RouteComponent() {
 		<AbilityProvider>
 			<SidebarProvider>
 				<AppSidebar />
-				<main>
-					<SidebarTrigger />
-					<Outlet />
+
+				<main className="w-full">
+					<div className="p-2 border-b ">
+						<Breadcrumbs />
+					</div>
+					<div className="p-8 space-y-6 w-full">
+						<Outlet />
+					</div>
 				</main>
 			</SidebarProvider>
 		</AbilityProvider>
