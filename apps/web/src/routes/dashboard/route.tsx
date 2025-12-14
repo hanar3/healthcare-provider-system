@@ -28,7 +28,7 @@ function RouteComponent() {
 				<AppSidebar />
 
 				<main className="w-full">
-					<div className="p-2 border-b ">
+					<div className="p-4 border-b h-[49px]">
 						<Breadcrumbs />
 					</div>
 					<div className="p-8 space-y-6 w-full">
