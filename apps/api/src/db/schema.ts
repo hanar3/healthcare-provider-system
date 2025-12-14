@@ -22,12 +22,18 @@ export const user = pgTable("user", {
 	email: text("email").notNull().unique(),
 	emailVerified: boolean("email_verified").default(false).notNull(),
 	image: text("image"),
+	status: text('status').default('active'), // 'active', 'defaulting'
+	plan: integer('plan').default(0), // 0 -> 'silver', 1 -> 'gold'
+	govIdHash: text('gov_id_hash'),
+	isSuperAdmin: boolean('is_super_admin').default(false),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 	updatedAt: timestamp("updated_at")
 		.defaultNow()
 		.$onUpdate(() => /* @__PURE__ */ new Date())
 		.notNull(),
 });
+
+
 
 export const session = pgTable(
 	"session",
