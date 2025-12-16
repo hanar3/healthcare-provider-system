@@ -1,9 +1,12 @@
+import { parseAsInteger, useQueryState } from "nuqs";
 import { DataTable } from "@/components/data-table";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { organizationsQuery } from "@/routes/dashboard/organizations/-queries";
 
 import { OrganizationsGet } from "@/api";
 import { ColumnDef } from "@tanstack/react-table";
+import { DataTablePagination } from "@/components/table-pagination";
+import { usePaginationSearchParams } from "@/hooks/use-pagination-searchparams";
 
 type Organization = OrganizationsGet["list"][0];
 
@@ -43,6 +46,21 @@ export const columns: ColumnDef<Organization>[] = [
 ];
 
 export function OrganizationsDataTable() {
-	const { data } = useSuspenseQuery(organizationsQuery(0, 10));
-	return <DataTable columns={columns} data={data?.list || []} />;
+	const [pagination, setPagination] = usePaginationSearchParams();
+	const { data } = useSuspenseQuery(
+		organizationsQuery(pagination.pageIndex, pagination.pageSize),
+	);
+	return (
+		<DataTable
+			columns={columns}
+			data={data?.list || []}
+			manualPagination
+			rowCount={data?.total}
+			state={{
+				pagination,
+			}}
+			onPaginationChange={setPagination}
+			paginationComponent={(table) => <DataTablePagination table={table} />}
+		/>
+	);
 }
