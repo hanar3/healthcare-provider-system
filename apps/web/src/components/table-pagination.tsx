@@ -61,7 +61,7 @@ export function DataTablePagination<TData>({
 						onClick={() => table.setPageIndex(0)}
 						disabled={!table.getCanPreviousPage()}
 					>
-						<span className="sr-only">Go to first page</span>
+						<span className="sr-only">Ir para a primeira página</span>
 						<ChevronsLeft />
 					</Button>
 					<Button
@@ -71,7 +71,7 @@ export function DataTablePagination<TData>({
 						onClick={() => table.previousPage()}
 						disabled={!table.getCanPreviousPage()}
 					>
-						<span className="sr-only">Go to previous page</span>
+						<span className="sr-only">Pagina anterior</span>
 						<ChevronLeft />
 					</Button>
 					<Button
@@ -81,7 +81,7 @@ export function DataTablePagination<TData>({
 						onClick={() => table.nextPage()}
 						disabled={!table.getCanNextPage()}
 					>
-						<span className="sr-only">Go to next page</span>
+						<span className="sr-only">Próxima página</span>
 						<ChevronRight />
 					</Button>
 					<Button
@@ -91,7 +91,7 @@ export function DataTablePagination<TData>({
 						onClick={() => table.setPageIndex(table.getPageCount() - 1)}
 						disabled={!table.getCanNextPage()}
 					>
-						<span className="sr-only">Go to last page</span>
+						<span className="sr-only">Ultima página</span>
 						<ChevronsRight />
 					</Button>
 				</div>
@@ -99,3 +99,4 @@ export function DataTablePagination<TData>({
 		</div>
 	);
 }
+

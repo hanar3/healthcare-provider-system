@@ -18,7 +18,6 @@ const user = await authClient.signUp.email({
 	name: username,
 	email: username,
 	password: password,
-	govId: "49012245818"
 })
 
 console.log(user);

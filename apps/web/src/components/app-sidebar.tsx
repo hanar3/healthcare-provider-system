@@ -18,6 +18,8 @@ import {
 	Stethoscope,
 	Users,
 } from "lucide-react";
+import { Button } from "./ui/button";
+import { authClient } from "@/lib/auth-client";
 
 const PREFIX = "/dashboard";
 const items = [
@@ -94,7 +96,9 @@ export function AppSidebar() {
 				</SidebarGroupContent>
 				<SidebarGroup />
 			</SidebarContent>
-			<SidebarFooter />
+			<SidebarFooter>
+				<Button onClick={() => authClient.signOut()}>Logout</Button>
+			</SidebarFooter>
 		</Sidebar>
 	);
 }

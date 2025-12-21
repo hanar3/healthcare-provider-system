@@ -1,9 +1,4 @@
-import {
-	parseAsIndex,
-	parseAsInteger,
-	parseAsString,
-	useQueryStates,
-} from "nuqs";
+import { parseAsIndex, parseAsInteger, useQueryStates } from "nuqs";
 
 const paginationParsers = {
 	pageIndex: parseAsIndex.withDefault(0),
