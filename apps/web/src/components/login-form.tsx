@@ -17,7 +17,6 @@ export function LoginForm({
 			password: "",
 		},
 		onSubmit: async ({ value }) => {
-			// Do something with form data
 			await authClient.signIn.email({
 				email: value.email,
 				password: value.password,
