@@ -1,7 +1,6 @@
 import { Elysia, type Context } from 'elysia';
 import { swagger } from "@elysiajs/swagger";
 import { cors } from '@elysiajs/cors';
-import { defineAbilityFor } from "@workspace/common/auth/ability"
 import { auth } from "./lib/auth";
 import { organizationsController } from './modules/organizations';
 

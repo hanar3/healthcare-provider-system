@@ -19,7 +19,7 @@ export const Route = createFileRoute("/dashboard/organizations/")({
 function RouteComponent() {
 	return (
 		<div>
-			<div className="w-full flex items-center justify-between">
+			<div className="w-full flex items-center justify-between mb-6">
 				<div>
 					<h1 className="text-3xl font-semibold text-foreground tracking-tight">
 						Empresas

@@ -1,13 +1,15 @@
-import { parseAsInteger, useQueryState } from "nuqs";
 import { DataTable } from "@/components/data-table";
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { organizationsQuery } from "@/routes/dashboard/organizations/-queries";
 
 import { OrganizationsGet } from "@/api";
 import { ColumnDef, PaginationState, Updater } from "@tanstack/react-table";
 import { DataTablePagination } from "@/components/table-pagination";
 import { usePaginationSearchParams } from "@/hooks/use-pagination-searchparams";
-import { Suspense, useTransition } from "react";
+import { useTransition } from "react";
+import { Badge } from "@/components/ui/badge";
+import { BadgeCheckIcon, BadgeX, Award } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type Organization = OrganizationsGet["list"][0];
 
@@ -17,6 +19,12 @@ const formatCNPJ = (v: string) =>
 		.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
 
 const plans = ["Prata", "Ouro"];
+
+const statusMap = {
+	active: "Adimplente",
+	defaulting: "Inadimplente",
+};
+
 export const columns: ColumnDef<Organization>[] = [
 	{
 		accessorKey: "name",
@@ -32,12 +40,39 @@ export const columns: ColumnDef<Organization>[] = [
 	{
 		accessorKey: "status",
 		header: "Status",
+		cell: (info) => {
+			const value = info.getValue<"active" | "defaulting">();
+			return (
+				<Badge
+					className={cn({
+						"border-green-500": value === "active",
+						"border-red-500": value === "defaulting",
+					})}
+					variant="outline"
+				>
+					{value === "active" ? <BadgeCheckIcon /> : <BadgeX />}
+					{statusMap[value]}
+				</Badge>
+			);
+		},
 	},
 	{
 		accessorKey: "plan",
 		header: "Plano",
 		cell: (info) => {
-			return plans[info.getValue<number>()];
+			const value = info.getValue<0 | 1>();
+			return (
+				<Badge
+					className={cn({
+						"bg-stone-300": value === 0,
+						"bg-amber-300": value === 1,
+					})}
+					variant="secondary"
+				>
+					<Award />
+					{plans[info.getValue<number>()]}
+				</Badge>
+			);
 		},
 	},
 	{
@@ -66,25 +101,22 @@ export function OrganizationsDataTable() {
 	};
 
 	return (
-		<>
-			{JSON.stringify(pagination)}
-			<DataTable
-				columns={columns}
-				data={data?.list || []}
-				manualPagination
-				pageCount={pageCount}
-				rowCount={data?.total}
-				initialState={{
-					pagination,
-				}}
-				state={{
-					pagination,
-				}}
-				onPaginationChange={handlePaginationChange}
-				paginationComponent={(table) => (
-					<DataTablePagination table={table} isPending={isPending} />
-				)}
-			/>
-		</>
+		<DataTable
+			columns={columns}
+			data={data?.list || []}
+			manualPagination
+			pageCount={pageCount}
+			rowCount={data?.total}
+			initialState={{
+				pagination,
+			}}
+			state={{
+				pagination,
+			}}
+			onPaginationChange={handlePaginationChange}
+			paginationComponent={(table) => (
+				<DataTablePagination table={table} isPending={isPending} />
+			)}
+		/>
 	);
 }
