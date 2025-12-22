@@ -1,12 +1,13 @@
 import { parseAsInteger, useQueryState } from "nuqs";
 import { DataTable } from "@/components/data-table";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { organizationsQuery } from "@/routes/dashboard/organizations/-queries";
 
 import { OrganizationsGet } from "@/api";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, PaginationState, Updater } from "@tanstack/react-table";
 import { DataTablePagination } from "@/components/table-pagination";
 import { usePaginationSearchParams } from "@/hooks/use-pagination-searchparams";
+import { Suspense, useTransition } from "react";
 
 type Organization = OrganizationsGet["list"][0];
 
@@ -47,20 +48,43 @@ export const columns: ColumnDef<Organization>[] = [
 
 export function OrganizationsDataTable() {
 	const [pagination, setPagination] = usePaginationSearchParams();
+	const [isPending, startTransition] = useTransition();
 	const { data } = useSuspenseQuery(
 		organizationsQuery(pagination.pageIndex, pagination.pageSize),
 	);
+
+	const pageCount = Math.ceil((data?.total ?? 0) / pagination.pageSize);
+	const handlePaginationChange = (updaterOrValue: Updater<PaginationState>) => {
+		const newPagination =
+			typeof updaterOrValue === "function"
+				? updaterOrValue(pagination)
+				: updaterOrValue;
+
+		startTransition(() => {
+			setPagination(newPagination);
+		});
+	};
+
 	return (
-		<DataTable
-			columns={columns}
-			data={data?.list || []}
-			manualPagination
-			rowCount={data?.total}
-			state={{
-				pagination,
-			}}
-			onPaginationChange={setPagination}
-			paginationComponent={(table) => <DataTablePagination table={table} />}
-		/>
+		<>
+			{JSON.stringify(pagination)}
+			<DataTable
+				columns={columns}
+				data={data?.list || []}
+				manualPagination
+				pageCount={pageCount}
+				rowCount={data?.total}
+				initialState={{
+					pagination,
+				}}
+				state={{
+					pagination,
+				}}
+				onPaginationChange={handlePaginationChange}
+				paginationComponent={(table) => (
+					<DataTablePagination table={table} isPending={isPending} />
+				)}
+			/>
+		</>
 	);
 }

@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Plus, Upload } from "lucide-react";
 import { organizationsQuery } from "./-queries";
 import { OrganizationsDataTable } from "./-components/data-table";
+import { Suspense } from "react";
 
 export const Route = createFileRoute("/dashboard/organizations/")({
 	component: RouteComponent,
@@ -38,7 +39,10 @@ function RouteComponent() {
 					</Button>
 				</div>
 			</div>
-			<OrganizationsDataTable />
+
+			<Suspense fallback={<div>Carregando...</div>}>
+				<OrganizationsDataTable />
+			</Suspense>
 		</div>
 	);
 }

@@ -14,8 +14,9 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { DataTablePagination } from "./table-pagination";
 
-interface DataTableProps<TData, TValue>
+interface DataTableProps<TData, _>
 	extends Omit<TableOptions<TData>, "getCoreRowModel"> {
 	paginationComponent?: (table: TTable<TData>) => React.ReactNode;
 }
@@ -82,7 +83,7 @@ export function DataTable<TData, TValue>({
 					</TableBody>
 				</Table>
 			</div>
-			{paginationComponent ? paginationComponent(table) : null}
+			<DataTablePagination table={table} />
 		</>
 	);
 }
