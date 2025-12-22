@@ -5,10 +5,24 @@ import { organizationsQuery } from "./-queries";
 import { OrganizationsDataTable } from "./-components/data-table";
 import { Suspense } from "react";
 
+type OrganizationSearch = {
+	page: number;
+	perPage: number;
+};
 export const Route = createFileRoute("/dashboard/organizations/")({
 	component: RouteComponent,
-	loader: async ({ context }) =>
-		context.queryClient.ensureQueryData(organizationsQuery(0, 10)),
+	validateSearch: (search: Record<string, unknown>): OrganizationSearch => {
+		return {
+			page: Number(search?.page ?? 1),
+			perPage: Number(search?.perpage ?? 10),
+		} as OrganizationSearch;
+	},
+	loader: async ({ context, location }) => {
+		const search: OrganizationSearch = location.search as OrganizationSearch;
+		return context.queryClient.ensureQueryData(
+			organizationsQuery(search.page, search.perPage),
+		);
+	},
 	staticData: {
 		breadcrumb: () => {
 			return "Empresas";
