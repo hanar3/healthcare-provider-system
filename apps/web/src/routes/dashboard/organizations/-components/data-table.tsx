@@ -2,8 +2,14 @@ import { DataTable } from "@/components/data-table";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { organizationsQuery } from "@/routes/dashboard/organizations/-queries";
 
-import { OrganizationsGet } from "@/api";
-import { ColumnDef, PaginationState, Updater } from "@tanstack/react-table";
+import type { OrganizationsGet } from "@/api";
+import type {
+	ColumnDef,
+	PaginationState,
+	Updater,
+} from "@tanstack/react-table";
+import { ptBR } from "date-fns/locale";
+import { format } from "date-fns";
 import { DataTablePagination } from "@/components/table-pagination";
 import { usePaginationSearchParams } from "@/hooks/use-pagination-searchparams";
 import { useTransition } from "react";
@@ -78,6 +84,11 @@ export const columns: ColumnDef<Organization>[] = [
 	{
 		accessorKey: "createdAt",
 		header: "Data de criação",
+		cell: (info) => {
+			return format(info.getValue<string>(), "dd 'de' MMMM 'de' yyyy", {
+				locale: ptBR,
+			});
+		},
 	},
 ];
 
