@@ -23,11 +23,6 @@ export const Route = createFileRoute("/dashboard/organizations/")({
 			organizationsQuery(search.page, search.perPage),
 		);
 	},
-	staticData: {
-		breadcrumb: () => {
-			return "Empresas";
-		},
-	},
 });
 
 function RouteComponent() {

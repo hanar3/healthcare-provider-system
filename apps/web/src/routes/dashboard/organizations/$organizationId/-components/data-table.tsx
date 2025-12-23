@@ -37,16 +37,7 @@ export const columns: ColumnDef<Organization>[] = [
 		accessorKey: "name",
 		header: "Nome",
 		cell: (info) => {
-			return (
-				<Link
-					to="/dashboard/organizations/$organizationId"
-					params={{ organizationId: info.row.original.id }}
-					search={{ page: 0, perPage: 10 }}
-					className="underline text-blue-600 hover:text-blue-800 visited:text-purple-600"
-				>
-					{info.getValue<string>()}
-				</Link>
-			);
+			return info.getValue<string>();
 		},
 	},
 	{
@@ -105,7 +96,7 @@ export const columns: ColumnDef<Organization>[] = [
 	},
 ];
 
-export function OrganizationsDataTable() {
+export function BeneficiariesDataTable() {
 	const [pagination, setPagination] = usePaginationSearchParams();
 	const [isPending, startTransition] = useTransition();
 	const { data } = useSuspenseQuery(
