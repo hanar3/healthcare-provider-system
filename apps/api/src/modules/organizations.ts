@@ -31,7 +31,7 @@ export const organizationsController = new Elysia({ prefix: '/organizations' })
 				...d,
 				govId: decrypted,
 			}
-		}))
+		}));
 
 		return {
 			list,
@@ -56,7 +56,18 @@ export const organizationsController = new Elysia({ prefix: '/organizations' })
 				return status(404, 'Organization not found');
 			}
 
-			return result[0];
+			const org = result.at(0)!; // org is guaranteed to exist due to last check
+			if (!org.govId) return org;
+			const parts = org.govId.split(":");
+			if (parts.length !== 2) {
+				console.warn(`org: ${org.id} isn't properly encrypted`); // todo: proper logging
+				return org;
+			}
+			const [iv, data] = parts as [string, string] // safe cast due to last check
+
+			org.govId = await decrypt({ iv, data });
+			return org;
+
 		},
 		{
 			params: t.Object({

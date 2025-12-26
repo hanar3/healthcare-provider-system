@@ -15,14 +15,9 @@ import { usePaginationSearchParams } from "@/hooks/use-pagination-searchparams";
 import { useTransition } from "react";
 import { Badge } from "@/components/ui/badge";
 import { BadgeCheckIcon, BadgeX, Award } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatCNPJ } from "@/lib/utils";
 
 type Organization = OrganizationsGet["list"][0];
-
-const formatCNPJ = (v: string) =>
-	v
-		.replace(/\D/g, "")
-		.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
 
 const plans = ["Prata", "Ouro"];
 

@@ -5,6 +5,7 @@ import { beneficiariesQuery, organizationQuery } from "./-queries";
 import { Suspense } from "react";
 import { BeneficiariesDataTable } from "./-components/data-table";
 import { useQuery } from "@tanstack/react-query";
+import { formatCNPJ } from "@/lib/utils";
 
 type BeneficiarySearch = {
   page: number;
@@ -39,14 +40,17 @@ function RouteComponent() {
     <div>
       <div className="w-full flex items-center justify-between mb-6">
         <div>
-          <div className="flex gap">
+          <div className="flex gap-2 items-baseline">
             <h1 className="text-3xl font-semibold text-foreground tracking-tight">
               {organization?.name}
             </h1>
+            {organization?.govId ? (
+              <small>{formatCNPJ(organization?.govId)}</small>
+            ) : null}
           </div>
 
           <p className="text-muted-foreground mt-1">
-            Visualize e gerencie empresas ativas.
+            Visualize e gerencie os empregados de {organization?.name}
           </p>
         </div>
         <div className="flex gap-3">
