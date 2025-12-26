@@ -1,5 +1,4 @@
 import { DataTable } from "@/components/data-table";
-import { Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { organizationsQuery } from "@/routes/dashboard/organizations/-queries";
 

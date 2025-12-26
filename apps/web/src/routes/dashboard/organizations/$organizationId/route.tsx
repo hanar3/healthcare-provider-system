@@ -13,7 +13,7 @@ export const Route = createFileRoute(
   },
   staticData: {
     breadcrumb: ({ loaderData }) => {
-      return (loaderData as { name?: string })?.name;
+      return (loaderData as { name?: string })?.name ?? "";
     },
   },
 });

@@ -22,11 +22,9 @@ function generateCNPJ() {
 
 const orgs: Array<typeof schemas.organizations.$inferInsert> = new Array(1200);
 
-console.log(orgs);
 
 for (let i = 0; i < orgs.length; i++) {
 	const encryptedCnpj = await encrypt(generateCNPJ());
-	// console.log(encryptedCnpj)
 	orgs[i] = {
 		name: faker.company.name(),
 		plan: faker.helpers.arrayElement([0, 1]),
