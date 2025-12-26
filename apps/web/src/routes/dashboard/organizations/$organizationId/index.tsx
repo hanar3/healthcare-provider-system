@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useParams } from "@tanstack/react-router";
 import { Plus, Upload } from "lucide-react";
-import { beneficiariesQuery } from "./-queries";
+import { beneficiariesQuery, organizationQuery } from "./-queries";
 import { Suspense } from "react";
 import { BeneficiariesDataTable } from "./-components/data-table";
+import { useQuery } from "@tanstack/react-query";
 
 type BeneficiarySearch = {
   page: number;
@@ -29,13 +30,21 @@ export const Route = createFileRoute(
 });
 
 function RouteComponent() {
+  const { organizationId } = useParams({
+    strict: true,
+    from: "/dashboard/organizations/$organizationId",
+  });
+  const { data: organization } = useQuery(organizationQuery(organizationId));
   return (
     <div>
       <div className="w-full flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-semibold text-foreground tracking-tight">
-            Empresas
-          </h1>
+          <div className="flex gap">
+            <h1 className="text-3xl font-semibold text-foreground tracking-tight">
+              {organization?.name}
+            </h1>
+          </div>
+
           <p className="text-muted-foreground mt-1">
             Visualize e gerencie empresas ativas.
           </p>
