@@ -26,7 +26,8 @@ export const user = pgTable("user", {
 	status: text('status').default('active'), // 'active', 'defaulting'
 	plan: integer('plan').default(0), // 0 -> 'silver', 1 -> 'gold'
 	govId: text('gov_id'),
-	isSuperAdmin: boolean('is_super_admin').default(false),
+	kind: integer().default(0), // 0 -> beneficiary, 1 -> organization admin, 2 -> clinic admin, 3 -> super admin
+	isSuperAdmin: boolean('is_super_admin').default(false), // might no longer be needed given the addition of 'kind'
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 	updatedAt: timestamp("updated_at")
 		.defaultNow()
