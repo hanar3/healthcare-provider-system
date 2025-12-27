@@ -1,6 +1,6 @@
 import { DataTable } from "@/components/data-table";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { organizationsQuery } from "@/routes/dashboard/organizations/-queries";
+import { beneficiariesQuery } from "@/routes/dashboard/organizations/$organizationId/-queries";
 
 import type { OrganizationsGet } from "@/api";
 import type {
@@ -15,15 +15,15 @@ import { usePaginationSearchParams } from "@/hooks/use-pagination-searchparams";
 import { useTransition } from "react";
 import { Badge } from "@/components/ui/badge";
 import { BadgeCheckIcon, BadgeX, Award } from "lucide-react";
-import { cn, formatCNPJ } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 type Organization = OrganizationsGet["list"][0];
 
 const plans = ["Prata", "Ouro"];
 
 const statusMap = {
-	active: "Adimplente",
-	defaulting: "Inadimplente",
+	active: "Ativo",
+	defaulting: "Inativo",
 };
 
 export const columns: ColumnDef<Organization>[] = [
@@ -36,9 +36,9 @@ export const columns: ColumnDef<Organization>[] = [
 	},
 	{
 		accessorKey: "govId",
-		header: "CNPJ",
+		header: "RG/CPF",
 		cell: (info) => {
-			return formatCNPJ(info.getValue<string>());
+			return info.getValue<string>(); // TODO: format RG/CPF
 		},
 	},
 	{
@@ -93,8 +93,9 @@ export const columns: ColumnDef<Organization>[] = [
 export function BeneficiariesDataTable() {
 	const [pagination, setPagination] = usePaginationSearchParams();
 	const [isPending, startTransition] = useTransition();
+
 	const { data } = useSuspenseQuery(
-		organizationsQuery(pagination.pageIndex, pagination.pageSize),
+		beneficiariesQuery(pagination.pageIndex, pagination.pageSize),
 	);
 
 	const pageCount = Math.ceil((data?.total ?? 0) / pagination.pageSize);

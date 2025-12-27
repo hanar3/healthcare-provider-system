@@ -10,8 +10,13 @@ export const beneficiariesQuery = (page: number, limit: number) =>
 	queryOptions({
 		queryKey: [queryKeys.LIST_BENEFICIARIES, page, limit],
 		queryFn: async () => {
-			// TODO: Implement this endpoint
-			return { total: 0, list: [] };
+			const { data } = await client.beneficiaries.get({
+				query: {
+					page,
+					limit,
+				},
+			});
+			return data;
 		},
 	});
 
