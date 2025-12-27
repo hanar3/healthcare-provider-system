@@ -1,5 +1,7 @@
 import { Elysia, t } from 'elysia';
-import { count, eq } from 'drizzle-orm';
+import {
+	and,
+	count, eq, ilike, or } from 'drizzle-orm';
 import { db } from '../db';
 import { organizations, user, userClinicAccess, userOrganizationAccess } from '../db/schema';
 import { decrypt, encrypt } from '../lib/crypto';
@@ -15,30 +17,50 @@ const createBeneficiaryDTO = t.Object({
 
 const updateBeneficiaryDTO = t.Partial(createBeneficiaryDTO);
 
+const beneficiaryListBaseFilters = [
+	or(eq(user.kind, 0), eq(user.kind, 1))
+];
 export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
-	.get('/', async ({ query: { page, limit } }) => {
-		const data = await db.query.user.findMany({
-			with: {
-				orgAccess: {
-					columns: {
-						organizationId: true
-					}
-				}
-			}
-		});
-		const [total] = await db.select({ count: count() }).from(user);
+	.get('/', async ({ query: { page, limit, ...f } }) => {
+
+		
+		const baseQuery = db.select({
+			id: user.id,
+			name: user.name,
+			emailVerified: user.emailVerified,
+			image: user.image,
+			status: user.status,
+			plan: user.plan,
+			govId: user.govId,
+			organizationId: userOrganizationAccess.organizationId,
+			createdAt: user.createdAt,
+			updatedAt: user.updatedAt,
+
+		}).from(user).leftJoin(userOrganizationAccess, eq(user.id, userOrganizationAccess.userId));
+		const filters = [...beneficiaryListBaseFilters];
+		if (f.organizationId) filters.push(eq(userOrganizationAccess.organizationId, f.organizationId));
+		if (f.govId) { // govId filter
+			const encrypted = await encrypt(f.govId);
+			filters.push(eq(user.govId, `${encrypted.iv}:${encrypted.data}`));
+		}
+		if (f.name) filters.push(ilike(user.name, `%${f.name}%`));
+		
+ 
+		const rows = await baseQuery.where(and(...filters)).limit(limit).offset(limit * page);
+		const [total] = await db.select({ count: count() }).from(user).leftJoin(userOrganizationAccess, eq(user.id, userOrganizationAccess.userId)).where(and(...filters));
+	
 
 
-		const list = await Promise.all(data.map(async d => {
-			if (!d.govId) return d;
+		const list = await Promise.all(rows.map(async user => {
+			if (!user.govId) return user;
 
-			const parts = d.govId.split(":");
-			if (parts.length !== 2) return d;
+			const parts = user.govId.split(":");
+			if (parts.length !== 2) return user;
 
 			const [iv, data] = parts as [string, string];
 			const decrypted = await decrypt({ iv, data });
 			return {
-				...d,
+				...user,
 				govId: decrypted,
 			}
 		}));
@@ -50,7 +72,10 @@ export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
 	}, {
 		query: t.Object({
 			page: t.Number(),
-			limit: t.Number({ maximum: 100 })
+			limit: t.Number({ maximum: 100 }),
+			organizationId: t.Optional(t.String()),
+			govId: t.Optional(t.String()),
+			name: t.Optional(t.String())
 		})
 	})
 

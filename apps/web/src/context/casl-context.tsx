@@ -16,7 +16,7 @@ export const AbilityProvider = ({
 		id: 1,
 		isSuperAdmin: false,
 		orgAccessIds: [10],
-		clinicAccessIds: [],
+		clinicAccessIds: [10],
 	};
 
 	const ability = defineAbilityFor(userPayload);
