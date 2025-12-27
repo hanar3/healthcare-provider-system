@@ -20,7 +20,7 @@ function generateCNPJ() {
 	return n.join('');
 }
 
-const orgs: Array<typeof schemas.organizations.$inferInsert> = new Array(1200);
+const orgs: Array<typeof schemas.organizations.$inferInsert> = new Array(50);
 
 
 for (let i = 0; i < orgs.length; i++) {
