@@ -4,6 +4,7 @@ import { Plus, Upload } from "lucide-react";
 import { organizationsQuery } from "./-queries";
 import { OrganizationsDataTable } from "./-components/data-table";
 import { Suspense } from "react";
+import { CreateOrganizationDialog } from "./-components/create-organization-dialog";
 
 type OrganizationSearch = {
 	page: number;
@@ -42,10 +43,7 @@ function RouteComponent() {
 						<Upload className="h-4 w-4" />
 						Importar CSV
 					</Button>
-					<Button className="gap-2">
-						<Plus className="h-4 w-4" />
-						Adicionar empresa
-					</Button>
+					<CreateOrganizationDialog />
 				</div>
 			</div>
 

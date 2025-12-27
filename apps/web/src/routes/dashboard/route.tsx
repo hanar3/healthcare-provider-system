@@ -3,7 +3,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AbilityProvider } from "@/context/casl-context";
 import { authClient } from "@/lib/auth-client";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { Breadcrumbs } from "./components/breadcrumbs";
+import { Breadcrumbs } from "./-components/breadcrumbs";
 
 export const Route = createFileRoute("/dashboard")({
 	component: RouteComponent,
