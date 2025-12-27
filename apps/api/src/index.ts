@@ -3,6 +3,7 @@ import { swagger } from "@elysiajs/swagger";
 import { cors } from '@elysiajs/cors';
 import { auth } from "./lib/auth";
 import { organizationsController } from './modules/organizations';
+import { beneficiariesController } from './modules/beneficiaries';
 
 const betterAuthView = (context: Context) => {
 	const BETTER_AUTH_ACCEPT_METHODS = ["POST", "GET"]
@@ -17,6 +18,7 @@ const app = new Elysia()
 	.use(cors())
 	.use(swagger())
 	.use(organizationsController)
+	.use(beneficiariesController)
 	.get('/', () => 'Health Provider API Active')
 	.get('/health', () => ({ status: 'ok', timestamp: new Date() }))
 	.all("/api/auth/*", betterAuthView)
