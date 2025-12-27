@@ -20,29 +20,34 @@ const updateBeneficiaryDTO = t.Partial(createBeneficiaryDTO);
 const beneficiaryListBaseFilters = [
 	or(eq(user.kind, 0), eq(user.kind, 1))
 ];
+
+const beneficiaryBaseSelect = {
+	id: user.id,
+	name: user.name,
+	emailVerified: user.emailVerified,
+	image: user.image,
+	status: user.status,
+	plan: user.plan,
+	govId: user.govId,
+	organizationId: userOrganizationAccess.organizationId,
+	createdAt: user.createdAt,
+	updatedAt: user.updatedAt,
+}
+
 export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
 	.get('/', async ({ query: { page, limit, ...f } }) => {
 
 		
-		const baseQuery = db.select({
-			id: user.id,
-			name: user.name,
-			emailVerified: user.emailVerified,
-			image: user.image,
-			status: user.status,
-			plan: user.plan,
-			govId: user.govId,
-			organizationId: userOrganizationAccess.organizationId,
-			createdAt: user.createdAt,
-			updatedAt: user.updatedAt,
+		const baseQuery = db.select({ ...beneficiaryBaseSelect }).from(user).leftJoin(userOrganizationAccess, eq(user.id, userOrganizationAccess.userId));
 
-		}).from(user).leftJoin(userOrganizationAccess, eq(user.id, userOrganizationAccess.userId));
 		const filters = [...beneficiaryListBaseFilters];
 		if (f.organizationId) filters.push(eq(userOrganizationAccess.organizationId, f.organizationId));
+
 		if (f.govId) { // govId filter
 			const encrypted = await encrypt(f.govId);
 			filters.push(eq(user.govId, `${encrypted.iv}:${encrypted.data}`));
 		}
+
 		if (f.name) filters.push(ilike(user.name, `%${f.name}%`));
 		
  
@@ -82,10 +87,8 @@ export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
 	.get(
 		'/:id',
 		async ({ params: { id }, status }) => {
-			const result = await db
-				.select()
-				.from(user)
-				.where(eq(user.id, id));
+			const result = await db.select({ ...beneficiaryBaseSelect }).from(user).leftJoin(userOrganizationAccess, eq(user.id, userOrganizationAccess.userId)).where(eq(user.id, id));
+
 
 			if (result.length === 0) {
 				return status(404, 'Organization not found');
