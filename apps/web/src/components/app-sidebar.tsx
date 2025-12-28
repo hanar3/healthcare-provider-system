@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { authClient } from "@/lib/auth-client";
+import { useNavigate } from "@tanstack/react-router";
 
 const PREFIX = "/dashboard";
 const items = [
@@ -56,6 +57,13 @@ const items = [
 ];
 
 export function AppSidebar() {
+	const navigate = useNavigate();
+	async function handleLogout() {
+		await authClient.signOut();
+		navigate({
+			to: '/',
+		});
+	}
 	return (
 		<Sidebar>
 			<SidebarHeader className="border-b p-2">
@@ -97,7 +105,7 @@ export function AppSidebar() {
 				<SidebarGroup />
 			</SidebarContent>
 			<SidebarFooter>
-				<Button onClick={() => authClient.signOut()}>Logout</Button>
+				<Button onClick={handleLogout}>Logout</Button>
 			</SidebarFooter>
 		</Sidebar>
 	);

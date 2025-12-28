@@ -1,5 +1,5 @@
 import { Stethoscope } from "lucide-react";
-import { Button } from "./ui/button";
+import { Link } from "@tanstack/react-router";
 
 export function SearchHeader() {
 	return (
@@ -11,9 +11,9 @@ export function SearchHeader() {
 						HealthFind
 					</span>
 				</div>
-				<Button variant="ghost" className="text-slate-600 hover:text-slate-800">
+				<Link to="/login" className="text-slate-600 hover:text-slate-800">
 					For Companies / Login
-				</Button>
+				</Link>
 			</div>
 		</header>
 	);
