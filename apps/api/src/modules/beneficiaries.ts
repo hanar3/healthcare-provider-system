@@ -3,7 +3,7 @@ import {
 	and,
 	count, eq, ilike, or } from 'drizzle-orm';
 import { db } from '../db';
-import { organizations, user, userClinicAccess, userOrganizationAccess } from '../db/schema';
+import { organizations, user, userOrganizationAccess } from '../db/schema';
 import { decrypt, encrypt } from '../lib/crypto';
 
 const createBeneficiaryDTO = t.Object({
