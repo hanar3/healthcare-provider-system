@@ -5,6 +5,8 @@ import type { App } from "../../../api/src/index";
 const client = treaty<App>("localhost:3001");
 
 export type OrganizationsGet = Treaty.Data<typeof client.organizations.get>;
-export type OrganizationCreate = Treaty.Data<typeof client.organizations.post>;
+export type OrganizationCreate = Parameters<
+	typeof client.organizations.post
+>[0];
 
 export default client;
