@@ -138,6 +138,7 @@ export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
 					isSuperAdmin: false,
 					image: undefined,
 					govId: payload.govId,
+					kind: 0, // beneficiary		TODO: create an enum and to this properly...
 				}).returning();
 
 				if (body.organizationId) {
