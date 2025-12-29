@@ -6,7 +6,11 @@ export const queryKeys = {
 	SHOW_ORGANIZATION: "show-organization",
 };
 
-export const beneficiariesQuery = (page: number, limit: number) =>
+export const beneficiariesQuery = (
+	page: number,
+	limit: number,
+	organizationId?: string,
+) =>
 	queryOptions({
 		queryKey: [queryKeys.LIST_BENEFICIARIES, page, limit],
 		queryFn: async () => {
@@ -14,6 +18,7 @@ export const beneficiariesQuery = (page: number, limit: number) =>
 				query: {
 					page,
 					limit,
+					organizationId,
 				},
 			});
 			return data;

@@ -61,6 +61,7 @@ export function CreateOrganizationDialog() {
 			name: "",
 			status: "",
 			govId: "",
+			plan: 0,
 		},
 		validators: {
 			onSubmit: schema,

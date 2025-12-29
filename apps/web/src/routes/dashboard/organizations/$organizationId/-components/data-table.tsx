@@ -16,6 +16,7 @@ import { useTransition } from "react";
 import { Badge } from "@/components/ui/badge";
 import { BadgeCheckIcon, BadgeX, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useParams } from "@tanstack/react-router";
 
 type Organization = OrganizationsGet["list"][0];
 
@@ -91,11 +92,18 @@ export const columns: ColumnDef<Organization>[] = [
 ];
 
 export function BeneficiariesDataTable() {
+	const { organizationId } = useParams({
+		from: "/dashboard/organizations/$organizationId",
+	});
 	const [pagination, setPagination] = usePaginationSearchParams();
 	const [isPending, startTransition] = useTransition();
 
 	const { data } = useSuspenseQuery(
-		beneficiariesQuery(pagination.pageIndex, pagination.pageSize),
+		beneficiariesQuery(
+			pagination.pageIndex,
+			pagination.pageSize,
+			organizationId,
+		),
 	);
 
 	const pageCount = Math.ceil((data?.total ?? 0) / pagination.pageSize);
