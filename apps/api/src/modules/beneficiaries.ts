@@ -127,33 +127,40 @@ export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
 				payload.govId = `${encryptedGovId.iv}:${encryptedGovId.data}`;
 			}
 
-			const result = await db.transaction(async () => {
-				const newUserId = Bun.randomUUIDv7();
+			try {
+				const result = await db.transaction(async () => {
+					const newUserId = Bun.randomUUIDv7();
 
-				const userResult = await db.insert(user).values({
-					id: newUserId,
-					email: body.email,
-					name: body.name,
-					emailVerified: true,
-					isSuperAdmin: false,
-					image: undefined,
-					govId: payload.govId,
-					kind: 0, // beneficiary		TODO: create an enum and to this properly...
-				}).returning();
+					const userResult = await db.insert(user).values({
+						id: newUserId,
+						email: body.email,
+						name: body.name,
+						emailVerified: true,
+						isSuperAdmin: false,
+						image: undefined,
+						govId: payload.govId,
+						kind: 0, // beneficiary		TODO: create an enum and to this properly...
+					}).returning();
 
-				if (body.organizationId) {
-					await db.insert(userOrganizationAccess).values({
-						userId: newUserId,
-						organizationId: body.organizationId,
-					})
-				}
+					if (body.organizationId) {
+						await db.insert(userOrganizationAccess).values({
+							userId: newUserId,
+							organizationId: body.organizationId,
+						})
+					}
 
-				return userResult;
-			});
+					return userResult;
+				});
+
+				return result[0];
+			} catch (err) {
+				console.error(err);
+				return err?.message;
+			}
 
 
 
-			return result[0];
+
 		},
 		{
 			body: createBeneficiaryDTO,

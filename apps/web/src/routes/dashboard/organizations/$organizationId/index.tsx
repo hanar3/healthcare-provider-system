@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { BeneficiariesDataTable } from "./-components/data-table";
 import { useQuery } from "@tanstack/react-query";
 import { formatCNPJ } from "@/lib/utils";
+import { CreateBeneficiaryDialog } from "./-components/create-beneficiary";
 
 type BeneficiarySearch = {
 	page: number;
@@ -58,10 +59,7 @@ function RouteComponent() {
 						<Upload className="h-4 w-4" />
 						Importar CSV
 					</Button>
-					<Button className="gap-2">
-						<Plus className="h-4 w-4" />
-						Adicionar beneficiário
-					</Button>
+					<CreateBeneficiaryDialog />
 				</div>
 			</div>
 

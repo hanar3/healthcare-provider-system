@@ -8,5 +8,6 @@ export type OrganizationsGet = Treaty.Data<typeof client.organizations.get>;
 export type OrganizationCreate = Parameters<
 	typeof client.organizations.post
 >[0];
+export type BeneficiaryCreate = Parameters<typeof client.beneficiaries.post>[0];
 
 export default client;
