@@ -15,8 +15,18 @@ import { DataTablePagination } from "@/components/table-pagination";
 import { usePaginationSearchParams } from "@/hooks/use-pagination-searchparams";
 import { useTransition } from "react";
 import { Badge } from "@/components/ui/badge";
-import { BadgeCheckIcon, BadgeX, Award } from "lucide-react";
+import {
+	BadgeCheckIcon,
+	BadgeX,
+	Award,
+	Pencil,
+	Trash,
+	BanknoteX,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TableRowActions } from "@/components/table-row-actions";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { DeleteOrganizationDialog } from "./delete-organization";
 
 type Organization = OrganizationsGet["list"][0];
 
@@ -101,6 +111,18 @@ export const columns: ColumnDef<Organization>[] = [
 			return format(info.getValue<string>(), "dd 'de' MMMM 'de' yyyy", {
 				locale: ptBR,
 			});
+		},
+	},
+	{
+		id: "actions",
+		cell: (info) => {
+			return (
+				<TableRowActions>
+					<DropdownMenuItem onClick={(e) => e.preventDefault()}>
+						<DeleteOrganizationDialog id={info.row.original.id} />
+					</DropdownMenuItem>
+				</TableRowActions>
+			);
 		},
 	},
 ];

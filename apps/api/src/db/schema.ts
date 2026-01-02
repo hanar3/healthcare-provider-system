@@ -8,6 +8,8 @@ export const organizations = pgTable('organizations', {
 	plan: integer('plan').default(0), // 0 -> 'silver', 1 -> 'gold'
 	govId: text('gov_id'), // encrypted gov_id
 	createdAt: timestamp('created_at').defaultNow(),
+	updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => /* @__PURE__ */ new Date()).notNull(),
+	deletedAt: timestamp("deleted_at"),
 });
 
 export const clinics = pgTable('clinics', {
@@ -15,6 +17,8 @@ export const clinics = pgTable('clinics', {
 	name: text('name').notNull(),
 	address: text('address'),
 	createdAt: timestamp('created_at').defaultNow(),
+	updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => /* @__PURE__ */ new Date()).notNull(),
+	deletedAt: timestamp("deleted_at"),
 });
 
 export const user = pgTable("user", {
@@ -28,6 +32,7 @@ export const user = pgTable("user", {
 	govId: text('gov_id'),
 	kind: integer().default(0), // 0 -> beneficiary, 1 -> organization admin, 2 -> clinic admin, 3 -> super admin
 	isSuperAdmin: boolean('is_super_admin').default(false), // might no longer be needed given the addition of 'kind'
+	deletedAt: timestamp("deleted_at"),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 	updatedAt: timestamp("updated_at")
 		.defaultNow()

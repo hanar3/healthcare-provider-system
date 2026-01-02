@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia';
-import { count, eq } from 'drizzle-orm';
+import { count, eq, isNotNull, isNull } from 'drizzle-orm';
 import { db } from '../db';
 import { organizations } from '../db/schema';
 import { decrypt, encrypt } from '../lib/crypto';
@@ -15,7 +15,7 @@ const updateOrgDTO = t.Partial(createOrgDTO);
 
 export const organizationsController = new Elysia({ prefix: '/organizations' })
 	.get('/', async ({ query: { page, limit } }) => {
-		const data = await db.select().from(organizations).offset(page * limit).limit(limit);
+		const data = await db.select().from(organizations).where(isNull(organizations.deletedAt)).offset(page * limit).limit(limit);
 		const [total] = await db.select({ count: count() }).from(organizations);
 
 
@@ -122,16 +122,23 @@ export const organizationsController = new Elysia({ prefix: '/organizations' })
 	.delete(
 		'/:id',
 		async ({ params: { id }, status }) => {
-			const result = await db
-				.delete(organizations)
-				.where(eq(organizations.id, id))
-				.returning();
+			try {
+				const result = await db
+					.update(organizations)
+					.set({ deletedAt: new Date() })
+					.where(eq(organizations.id, id))
+					.returning();
 
-			if (result.length === 0) {
-				return status(404, 'Organization not found');
+				if (result.length === 0) {
+					return status(404, 'Organization not found');
+				}
+
+				return { success: true, deletedId: result[0]!.id };
+			} catch (err) {
+				console.error(err);
+				return status(500);
 			}
 
-			return { success: true, deletedId: result[0]!.id };
 		},
 		{
 			params: t.Object({

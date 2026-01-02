@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { createFileRoute, useParams } from "@tanstack/react-router";
-import { Plus, Upload } from "lucide-react";
+import { Upload } from "lucide-react";
 import { beneficiariesQuery, organizationQuery } from "./-queries";
 import { Suspense } from "react";
 import { BeneficiariesDataTable } from "./-components/data-table";
@@ -36,6 +36,7 @@ function RouteComponent() {
 		strict: true,
 		from: "/dashboard/organizations/$organizationId",
 	});
+
 	const { data: organization } = useQuery(organizationQuery(organizationId));
 	return (
 		<div>
