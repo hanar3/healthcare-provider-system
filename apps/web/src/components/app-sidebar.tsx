@@ -14,10 +14,12 @@ import {
 	Activity,
 	Building2,
 	LayoutDashboard,
+	LogOut,
 	Settings,
 	Stethoscope,
 	Users,
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "./ui/button";
 import { authClient } from "@/lib/auth-client";
 import { useNavigate } from "@tanstack/react-router";
@@ -105,7 +107,22 @@ export function AppSidebar() {
 				<SidebarGroup />
 			</SidebarContent>
 			<SidebarFooter>
-				<Button onClick={handleLogout}>Logout</Button>
+				<div className="border-t border-border p-4">
+					<div className="flex items-center gap-3 rounded-lg px-3 py-2">
+						<Avatar className="h-9 w-9">
+							<AvatarImage src="/professional-doctor.png" alt="Dr. Sarah Johnson" />
+							<AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">SJ</AvatarFallback>
+						</Avatar>
+						<div className="flex-1 min-w-0">
+							<p className="text-sm font-medium text-foreground truncate">Dr. Sarah Johnson</p>
+							<p className="text-xs text-muted-foreground truncate">Administrator</p>
+						</div>
+						<Button onClick={handleLogout} variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+							<LogOut className="h-4 w-4" />
+							<span className="sr-only">Logout</span>
+						</Button>
+					</div>
+				</div>
 			</SidebarFooter>
 		</Sidebar>
 	);
