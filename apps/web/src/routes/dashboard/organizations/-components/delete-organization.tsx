@@ -13,6 +13,8 @@ import client, { type OrganizationCreate } from "@/api";
 import { queryKeys } from "../-queries";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { Trash } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function DeleteOrganizationDialog({ id }: { id: string }) {
 	const [open, setOpen] = useState(false);
@@ -31,7 +33,9 @@ export function DeleteOrganizationDialog({ id }: { id: string }) {
 	return (
 		<AlertDialog open={open} onOpenChange={setOpen}>
 			<AlertDialogTrigger className="text-start w-full h-full">
-				Excluir
+				<Button variant="ghost" size="sm">
+					<Trash size={12} />
+				</Button>
 			</AlertDialogTrigger>
 			<AlertDialogContent>
 				<AlertDialogHeader>

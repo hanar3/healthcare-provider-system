@@ -117,11 +117,9 @@ export const columns: ColumnDef<Organization>[] = [
 		id: "actions",
 		cell: (info) => {
 			return (
-				<TableRowActions>
-					<DropdownMenuItem onClick={(e) => e.preventDefault()}>
-						<DeleteOrganizationDialog id={info.row.original.id} />
-					</DropdownMenuItem>
-				</TableRowActions>
+				<div className="flex">
+					<DeleteOrganizationDialog id={info.row.original.id} />
+				</div>
 			);
 		},
 	},
