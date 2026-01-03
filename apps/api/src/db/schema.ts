@@ -120,14 +120,14 @@ export const accountRelations = relations(account, ({ one }) => ({
 }));
 
 export const userOrganizationAccess = pgTable('user_organization_access', {
-	userId: text('user_id').references(() => user.id).notNull(),
+	userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }).notNull(),
 	organizationId: uuid('organization_id').references(() => organizations.id).notNull(),
 }, (t) => ([{
 	pk: primaryKey({ columns: [t.userId, t.organizationId] }),
 }]));
 
 export const userClinicAccess = pgTable('user_clinic_access', {
-	userId: text('user_id').references(() => user.id).notNull(),
+	userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }).notNull(),
 	clinicId: uuid('clinic_id').references(() => clinics.id).notNull(),
 }, (t) => ([{
 	pk: primaryKey({ columns: [t.userId, t.clinicId] }),

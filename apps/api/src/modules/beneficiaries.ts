@@ -3,7 +3,7 @@ import {
 	and,
 	count, eq, ilike, or } from 'drizzle-orm';
 import { db } from '../db';
-import { organizations, user, userOrganizationAccess } from '../db/schema';
+import { user, userOrganizationAccess } from '../db/schema';
 import { decrypt, encrypt } from '../lib/crypto';
 
 const createBeneficiaryDTO = t.Object({
@@ -18,7 +18,7 @@ const createBeneficiaryDTO = t.Object({
 const updateBeneficiaryDTO = t.Partial(createBeneficiaryDTO);
 
 const beneficiaryListBaseFilters = [
-	or(eq(user.kind, 0), eq(user.kind, 1))
+	or(eq(user.kind, 0), eq(user.kind, 1)),
 ];
 
 const beneficiaryBaseSelect = {
@@ -92,20 +92,20 @@ export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
 
 
 			if (result.length === 0) {
-				return status(404, 'Organization not found');
+				return status(404, 'User not found');
 			}
 
-			const org = result.at(0)!; // org is guaranteed to exist due to last check
-			if (!org.govId) return org;
-			const parts = org.govId.split(":");
+			const userResult = result.at(0)!; // org is guaranteed to exist due to last check
+			if (!userResult.govId) return userResult;
+			const parts = userResult.govId.split(":");
 			if (parts.length !== 2) {
-				console.warn(`user: ${org.id} isn't properly encrypted`); // todo: proper logging
-				return org;
+				console.warn(`user: ${userResult.id} isn't properly encrypted`); // todo: proper logging
+				return userResult;
 			}
 			const [iv, data] = parts as [string, string] // safe cast due to last check
 
-			org.govId = await decrypt({ iv, data });
-			return org;
+			userResult.govId = await decrypt({ iv, data });
+			return userResult;
 
 		},
 		{
@@ -128,36 +128,31 @@ export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
 				payload.govId = `${encryptedGovId.iv}:${encryptedGovId.data}`;
 			}
 
-			try {
-				const result = await db.transaction(async () => {
-					const newUserId = Bun.randomUUIDv7();
+			const result = await db.transaction(async () => {
+				const newUserId = Bun.randomUUIDv7();
 
-					const userResult = await db.insert(user).values({
-						id: newUserId,
-						email: body.email,
-						name: body.name,
-						emailVerified: true,
-						isSuperAdmin: false,
-						image: undefined,
-						govId: payload.govId,
-						kind: 0, // beneficiary		TODO: create an enum and to this properly...
-					}).returning();
+				const userResult = await db.insert(user).values({
+					id: newUserId,
+					email: body.email,
+					name: body.name,
+					emailVerified: true,
+					isSuperAdmin: false,
+					image: undefined,
+					govId: payload.govId,
+					kind: 0, // beneficiary		TODO: create an enum and to this properly...
+				}).returning();
 
-					if (body.organizationId) {
-						await db.insert(userOrganizationAccess).values({
-							userId: newUserId,
-							organizationId: body.organizationId,
-						})
-					}
+				if (body.organizationId) {
+					await db.insert(userOrganizationAccess).values({
+						userId: newUserId,
+						organizationId: body.organizationId,
+					})
+				}
 
-					return userResult;
-				});
+				return userResult;
+			});
 
-				return result[0];
-			} catch (err) {
-				console.error(err);
-				return err?.message;
-			}
+			return result[0];
 
 
 
