@@ -58,32 +58,40 @@ const items = [
 	},
 ];
 
-function SidebarLogOut(props: {name: string, role: string}) {
+function SidebarLogOut(props: { name: string; role: string }) {
 	const navigate = useNavigate();
 	async function handleLogout() {
 		await authClient.signOut();
 		navigate({
-			to: '/',
+			to: "/",
 		});
 	}
 	return (
 		<div className="border-t border-border p-4">
-					<div className="flex items-center gap-3 rounded-lg px-3 py-2">
-						<Avatar className="h-9 w-9">
-							<AvatarImage src="/professional-doctor.png" alt={props.name} />
-							<AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">SJ</AvatarFallback>
-						</Avatar>
-						<div className="flex-1 min-w-0">
-							<p className="text-sm font-medium text-foreground truncate">{props.name}</p>
-							<p className="text-xs text-muted-foreground truncate">{props.role}</p>
-						</div>
-						<Button onClick={handleLogout} variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
-							<LogOut className="h-4 w-4" />
-							<span className="sr-only">Sair</span>
-						</Button>
-					</div>
+			<div className="flex items-center gap-3 rounded-lg  ">
+				<Avatar className="h-9 w-9">
+					<AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
+						SJ
+					</AvatarFallback>
+				</Avatar>
+				<div className="flex-1 min-w-0">
+					<p className="text-sm font-medium text-foreground truncate">
+						{props.name}
+					</p>
+					<p className="text-xs text-muted-foreground truncate">{props.role}</p>
 				</div>
-	)
+				<Button
+					onClick={handleLogout}
+					variant="ghost"
+					size="icon"
+					className="h-8 w-8 text-muted-foreground hover:text-foreground"
+				>
+					<LogOut className="h-4 w-4" />
+					<span className="sr-only">Sair</span>
+				</Button>
+			</div>
+		</div>
+	);
 }
 
 export function AppSidebar() {
@@ -128,7 +136,7 @@ export function AppSidebar() {
 				<SidebarGroup />
 			</SidebarContent>
 			<SidebarFooter>
-				<SidebarLogOut name="Dr. Sarah Johnson" role="Administrator"/>
+				<SidebarLogOut name="Dr. Sarah Johnson" role="Administrator" />
 			</SidebarFooter>
 		</Sidebar>
 	);
