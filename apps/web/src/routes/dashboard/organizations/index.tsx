@@ -35,7 +35,7 @@ function RouteComponent() {
 						Empresas
 					</h1>
 					<p className="text-muted-foreground mt-1">
-						Visualize e gerencie empresas ativas!!!.
+						Visualize e gerencie empresas ativas.
 					</p>
 				</div>
 				<div className="flex gap-3">
