@@ -16,15 +16,15 @@ import { useMutation } from "@tanstack/react-query";
 import { Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function DeleteOrganizationDialog({ id }: { id: string }) {
+export function DeleteBeneficiaryDialog({ id }: { id: string }) {
 	const [open, setOpen] = useState(false);
 	const { mutate: deleteOrganization } = useMutation({
 		mutationFn: async () => {
-			await client.organizations({ id }).delete();
+			await client.beneficiaries({ id }).delete();
 		},
 		onSuccess: (_data, _variables, _onMutateResult, context) => {
 			context.client.invalidateQueries({
-				queryKey: [queryKeys.LIST_ORGANIZATIONS],
+				queryKey: [queryKeys.LIST_BENEFICIARIES],
 			});
 			setOpen(false);
 		},
@@ -41,7 +41,7 @@ export function DeleteOrganizationDialog({ id }: { id: string }) {
 				<AlertDialogHeader>
 					<AlertDialogTitle>Confirmar ação</AlertDialogTitle>
 					<AlertDialogDescription>
-						Essa ação excluirá permanentemente essa empresa, tem certeza?
+						Essa ação excluirá permanentemente esse beneficiário, tem certeza?
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>

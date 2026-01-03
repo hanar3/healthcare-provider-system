@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia';
-import { count, eq, isNotNull, isNull } from 'drizzle-orm';
+import { count, desc, eq, isNotNull, isNull } from 'drizzle-orm';
 import { db } from '../db';
 import { organizations } from '../db/schema';
 import { decrypt, encrypt } from '../lib/crypto';
@@ -15,7 +15,7 @@ const updateOrgDTO = t.Partial(createOrgDTO);
 
 export const organizationsController = new Elysia({ prefix: '/organizations' })
 	.get('/', async ({ query: { page, limit } }) => {
-		const data = await db.select().from(organizations).where(isNull(organizations.deletedAt)).offset(page * limit).limit(limit);
+		const data = await db.select().from(organizations).where(isNull(organizations.deletedAt)).offset(page * limit).limit(limit).orderBy(desc(organizations.createdAt));
 		const [total] = await db.select({ count: count() }).from(organizations);
 
 

@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { TableRowActions } from "@/components/table-row-actions";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { DeleteOrganizationDialog } from "./delete-organization";
+import { EditOrganizationDialog } from "./edit-organization";
 
 type Organization = OrganizationsGet["list"][0];
 
@@ -119,6 +120,7 @@ export const columns: ColumnDef<Organization>[] = [
 			return (
 				<div className="flex">
 					<DeleteOrganizationDialog id={info.row.original.id} />
+					<EditOrganizationDialog id={info.row.original.id} />
 				</div>
 			);
 		},

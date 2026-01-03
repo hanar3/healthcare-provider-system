@@ -42,11 +42,9 @@ const schema = z.object({
 
 export function EditOrganizationDialog({ id }: { id: string }) {
 	const [open, setOpen] = useState(false);
-	const { mutate: createOrganization } = useMutation({
+	const { mutate: editOrganization } = useMutation({
 		mutationFn: async (payload: OrganizationCreate) => {
-			await client.organizations.post({
-				...payload,
-			});
+			await client.organizations({ id }).patch({ ...payload });
 		},
 		onSuccess: (_data, _variables, _onMutateResult, context) => {
 			context.client.invalidateQueries({
@@ -66,7 +64,7 @@ export function EditOrganizationDialog({ id }: { id: string }) {
 			onSubmit: schema,
 		},
 		onSubmit: ({ value }) => {
-			createOrganization(value);
+			editOrganization(value);
 			setOpen(false);
 		},
 	});
@@ -74,20 +72,22 @@ export function EditOrganizationDialog({ id }: { id: string }) {
 	const { data } = useQuery(
 		organizationQuery(id, {
 			onSuccess: (data) => {
-				form.reset({
-					name: data?.name ?? "",
-					status: data?.status ?? "",
-					govId: data?.govId ?? "",
-					plan: data?.plan ?? 0,
-				});
+				if (data) {
+					form.setFieldValue("name", data.name);
+					form.setFieldValue("status", data.status || "");
+					form.setFieldValue("govId", data.govId || "");
+					form.setFieldValue("plan", data.plan || 0);
+				}
 			},
 		}),
 	);
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger className="flex gap-2 items-center bg-primary text-white p-2 rounded-md cursor-pointer text-sm">
-				<Edit size="14px" className="text-sm" />
+			<DialogTrigger>
+				<Button variant="ghost" size="sm">
+					<Edit size="14px" className="text-sm" />
+				</Button>
 			</DialogTrigger>
 			<DialogContent>
 				<DialogHeader>
