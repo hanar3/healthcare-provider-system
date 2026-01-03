@@ -24,6 +24,7 @@ const beneficiaryListBaseFilters = [
 const beneficiaryBaseSelect = {
 	id: user.id,
 	name: user.name,
+	email: user.email,
 	emailVerified: user.emailVerified,
 	image: user.image,
 	status: user.status,

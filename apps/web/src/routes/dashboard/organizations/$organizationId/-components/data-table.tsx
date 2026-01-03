@@ -18,6 +18,7 @@ import { BadgeCheckIcon, BadgeX, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useParams } from "@tanstack/react-router";
 import { DeleteBeneficiaryDialog } from "./delete-beneficiary";
+import { EditBenefciaryDialog } from "./edit-beneficiary";
 
 type Organization = OrganizationsGet["list"][0];
 
@@ -96,6 +97,7 @@ export const columns: ColumnDef<Organization>[] = [
 			return (
 				<div className="flex gap-2">
 					<DeleteBeneficiaryDialog id={info.row.original.id} />
+					<EditBenefciaryDialog id={info.row.original.id} />
 				</div>
 			);
 		},

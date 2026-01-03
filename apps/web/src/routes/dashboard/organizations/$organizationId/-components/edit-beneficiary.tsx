@@ -7,11 +7,10 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { z } from "zod";
-import { Plus } from "lucide-react";
+import { Edit } from "lucide-react";
 import { useForm } from "@tanstack/react-form";
 import {
 	Field,
-	FieldDescription,
 	FieldError,
 	FieldGroup,
 	FieldLabel,
@@ -27,11 +26,11 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useMutation } from "@tanstack/react-query";
-import client, { BeneficiaryCreate, type OrganizationCreate } from "@/api";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import client, { type BeneficiaryCreate } from "@/api";
 import { queryKeys } from "../-queries";
+import { beneficiaryById } from "../../../-queries";
 import { useState } from "react";
-import { useParams } from "@tanstack/react-router";
 
 const schema = z.object({
 	name: z.string(),
@@ -40,19 +39,13 @@ const schema = z.object({
 	govId: z.string(),
 });
 
-export function CreateBeneficiaryDialog() {
-	const { organizationId } = useParams({
-		from: "/dashboard/organizations/$organizationId",
-	});
-
+export function EditBenefciaryDialog({ id }: { id: string }) {
 	const [open, setOpen] = useState(false);
+	const { data, refetch } = useQuery(beneficiaryById(id));
 
-	const { mutate: createBeneficiary } = useMutation({
-		mutationFn: async (payload: BeneficiaryCreate) => {
-			await client.beneficiaries.post({
-				...payload,
-				organizationId,
-			});
+	const { mutateAsync: editBeneficiary } = useMutation({
+		mutationFn: async (payload: Partial<BeneficiaryCreate>) => {
+			await client.beneficiaries({ id }).patch({ ...payload });
 		},
 		onSuccess: (_data, _variables, _onMutateResult, context) => {
 			context.client.invalidateQueries({
@@ -63,31 +56,40 @@ export function CreateBeneficiaryDialog() {
 
 	const form = useForm({
 		defaultValues: {
-			name: "",
-			email: "",
-			plan: 0,
-			govId: "",
+			name: data?.name ?? "",
+			email: data?.email ?? "",
+			plan: data?.plan ?? 0,
+			govId: data?.govId ?? "",
 		},
 		validators: {
 			onSubmit: schema,
 		},
-		onSubmit: ({ value }) => {
-			createBeneficiary(value);
+		onSubmit: async ({ value, formApi }) => {
+			await editBeneficiary({
+				name: value.name,
+				email: value.email,
+				plan: value.plan,
+				govId: value.govId,
+			});
+
+			formApi.reset();
+			await refetch();
 			setOpen(false);
 		},
 	});
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger className="flex gap-2 items-center bg-primary text-white p-2 rounded-md cursor-pointer text-sm">
-				<Plus size="14px" className="text-sm" />
-				Adicionar Beneficiário
+			<DialogTrigger>
+				<Button variant="ghost" size="sm">
+					<Edit size="14px" className="text-sm" />
+				</Button>
 			</DialogTrigger>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>Adicionar beneficiário</DialogTitle>
+					<DialogTitle>Editar {data?.name}</DialogTitle>
 					<DialogDescription>
-						Cadastre uma novo beneficiário no sistema
+						Modifique os dados do beneficiário
 					</DialogDescription>
 				</DialogHeader>
 				<form
@@ -202,7 +204,7 @@ export function CreateBeneficiaryDialog() {
 											</SelectTrigger>
 											<SelectContent>
 												<SelectGroup>
-													<SelectLabel>Plano do beneficiário</SelectLabel>
+													<SelectLabel>Plano do beneficário</SelectLabel>
 													<SelectItem value="0">Prata</SelectItem>
 													<SelectItem value="1">Ouro</SelectItem>
 												</SelectGroup>
