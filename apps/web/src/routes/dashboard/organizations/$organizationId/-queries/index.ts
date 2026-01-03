@@ -24,12 +24,3 @@ export const beneficiariesQuery = (
 			return data;
 		},
 	});
-
-export const organizationQuery = (orgId: string) =>
-	queryOptions({
-		queryKey: [queryKeys.SHOW_ORGANIZATION, orgId],
-		queryFn: async () => {
-			const { data } = await client.organizations({ id: orgId }).get();
-			return data;
-		},
-	});

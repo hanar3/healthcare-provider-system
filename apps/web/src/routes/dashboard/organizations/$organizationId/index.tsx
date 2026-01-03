@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { Upload } from "lucide-react";
-import { beneficiariesQuery, organizationQuery } from "./-queries";
+import { organizationQuery } from "../-queries";
+import { beneficiariesQuery } from "./-queries";
 import { Suspense } from "react";
 import { BeneficiariesDataTable } from "./-components/data-table";
 import { useQuery } from "@tanstack/react-query";

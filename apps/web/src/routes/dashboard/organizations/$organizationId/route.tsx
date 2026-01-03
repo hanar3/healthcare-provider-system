@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { organizationQuery } from "./-queries";
+import { organizationQuery } from "../-queries";
 
 export const Route = createFileRoute(
   "/dashboard/organizations/$organizationId",

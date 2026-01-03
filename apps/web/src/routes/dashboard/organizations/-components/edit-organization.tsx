@@ -7,7 +7,7 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { z } from "zod";
-import { Plus } from "lucide-react";
+import { Edit, Plus } from "lucide-react";
 import { useForm } from "@tanstack/react-form";
 import {
 	Field,
@@ -26,9 +26,9 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import client, { type OrganizationCreate } from "@/api";
-import { queryKeys } from "../-queries";
+import { organizationQuery, queryKeys } from "../-queries";
 import { useState } from "react";
 
 const schema = z.object({
@@ -40,11 +40,7 @@ const schema = z.object({
 	govId: z.string(),
 });
 
-export function EditOrganizationDialog({
-	trigger,
-}: {
-	trigger: React.ReactNode;
-}) {
+export function EditOrganizationDialog({ id }: { id: string }) {
 	const [open, setOpen] = useState(false);
 	const { mutate: createOrganization } = useMutation({
 		mutationFn: async (payload: OrganizationCreate) => {
@@ -75,18 +71,28 @@ export function EditOrganizationDialog({
 		},
 	});
 
+	const { data } = useQuery(
+		organizationQuery(id, {
+			onSuccess: (data) => {
+				form.reset({
+					name: data?.name ?? "",
+					status: data?.status ?? "",
+					govId: data?.govId ?? "",
+					plan: data?.plan ?? 0,
+				});
+			},
+		}),
+	);
+
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger className="flex gap-2 items-center bg-primary text-white p-2 rounded-md cursor-pointer text-sm">
-				<Plus size="14px" className="text-sm" />
-				Adicionar Empresa
+				<Edit size="14px" className="text-sm" />
 			</DialogTrigger>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>Adicionar empresa</DialogTitle>
-					<DialogDescription>
-						Cadastre uma nova empresa no sistema
-					</DialogDescription>
+					<DialogTitle>Editar {data?.name}</DialogTitle>
+					<DialogDescription>Alterar informações da empresa</DialogDescription>
 				</DialogHeader>
 				<form
 					className="flex flex-col gap-4"

@@ -9,5 +9,8 @@ export type OrganizationCreate = Parameters<
 	typeof client.organizations.post
 >[0];
 export type BeneficiaryCreate = Parameters<typeof client.beneficiaries.post>[0];
+export type OrganizationGet = Treaty.Data<
+	Awaited<ReturnType<typeof client.organizations>["get"]>
+>;
 
 export default client;
