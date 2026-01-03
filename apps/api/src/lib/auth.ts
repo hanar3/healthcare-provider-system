@@ -3,26 +3,38 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "../db";
 import * as schema from "../db/schema";
 import { createAuthMiddleware } from "better-auth/api";
-import { encrypt } from "./crypto";
+import { eq } from "drizzle-orm";
 export const auth = betterAuth({
 	hooks: {
-		before: createAuthMiddleware(async (ctx) => {
+		after: createAuthMiddleware(async (ctx) => {
 			if (ctx.path !== "/sign-up/email") {
 				return;
 			}
+			const body = ctx.body;
 
-			if (ctx.body?.govId) {
-				const encrypted = await encrypt(ctx.body.govId);
-				ctx.body.govId = `${encrypted.iv}:${encrypted.data}`;
+			const user = ctx.context.newSession?.user;
+			if (user) {
+				const [profile] = await db.select().from(schema.profile).where(eq(schema.profile.email, user.email));
+				if (profile) {
+					console.log(`user: ${user.email} already has a profile, associating new user with it`);
+					await db.update(schema.profile).set({
+						userId: user.id,
+					}).where(eq(schema.profile.email, body.email));
+				} else {
+					// create a profile if it doesn't exist
+					// this has some implications, the new profile will be created without a proper role
+					console.warn('user: ' + user.email + ' had no profile, creating one without a role.');
+					await db.insert(schema.profile).values({
+						name: user.name,
+						email: user.email,
+						userId: user.id,
+					})
+				}
 			}
+
 		})
 	},
-	user: {
-		additionalFields: {
-			govId: { type: "string", required: false },
-			status: { type: "string", required: false, defaultValue: "active", input: false },
-		}
-	},
+
 	emailAndPassword: {
 		enabled: true,
 		password: {

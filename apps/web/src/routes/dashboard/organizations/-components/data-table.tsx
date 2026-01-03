@@ -81,7 +81,7 @@ export const columns: ColumnDef<Organization>[] = [
 					variant="outline"
 				>
 					{value === "active" ? <BadgeCheckIcon /> : <BadgeX />}
-					{statusMap[value]}
+					{value}
 				</Badge>
 			);
 		},

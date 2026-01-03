@@ -1,14 +1,33 @@
-import { pgTable, text, boolean, timestamp, primaryKey, integer, index, uuid } from 'drizzle-orm/pg-core';
+import { pgTable, text, boolean, timestamp, primaryKey, integer, index, uuid, pgEnum } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
+
+export const profileRole = pgEnum('profile_role_enum', [
+	'beneficiary',
+	'organization_admin',
+	'clinic_admin',
+	'super_admin',
+]);
+
+export const plan = pgEnum('plan_enum', [
+	'silver',
+	'gold'
+]);
+
+export const paymentStatus = pgEnum('payment_status_enum', [
+	'active',
+	'defaulting',
+	'suspended',
+	'grace_period'
+]);
 
 export const organizations = pgTable('organizations', {
 	id: uuid('id').primaryKey().defaultRandom(),
 	name: text('name').notNull(),
-	status: text('status').default('active'), // 'active', 'defaulting'
-	plan: integer('plan').default(0), // 0 -> 'silver', 1 -> 'gold'
-	govId: text('gov_id'), // encrypted gov_id
+	status: paymentStatus('status').default('active'), 
+	plan: plan('plan').default('silver'), 
+	govId: text('gov_id'), 
 	createdAt: timestamp('created_at').defaultNow(),
-	updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => /* @__PURE__ */ new Date()).notNull(),
+	updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
 	deletedAt: timestamp("deleted_at"),
 });
 
@@ -16,10 +35,28 @@ export const clinics = pgTable('clinics', {
 	id: uuid('id').primaryKey().defaultRandom(),
 	name: text('name').notNull(),
 	address: text('address'),
+	govId: text('gov_id'),
 	createdAt: timestamp('created_at').defaultNow(),
-	updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => /* @__PURE__ */ new Date()).notNull(),
+	updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
 	deletedAt: timestamp("deleted_at"),
 });
+
+export const profile = pgTable("profile", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	name: text("name").notNull(),
+	email: text("email").notNull().unique(),
+	status: paymentStatus('status').default('active'), 
+	govId: text('gov_id'),
+	plan: plan('plan').default('silver'), 
+	role: profileRole('role'),
+	userId: text("user_id")
+		.references(() => user.id, { onDelete: "cascade" }),
+	createdAt: timestamp("created_at").defaultNow().notNull(),
+	updatedAt: timestamp("updated_at")
+		.defaultNow()
+		.$onUpdate(() => new Date())
+		.notNull(),
+})
 
 export const user = pgTable("user", {
 	id: text("id").primaryKey(),
@@ -27,16 +64,10 @@ export const user = pgTable("user", {
 	email: text("email").notNull().unique(),
 	emailVerified: boolean("email_verified").default(false).notNull(),
 	image: text("image"),
-	status: text('status').default('active'), // 'active', 'defaulting'
-	plan: integer('plan').default(0), // 0 -> 'silver', 1 -> 'gold'
-	govId: text('gov_id'),
-	kind: integer().default(0), // 0 -> beneficiary, 1 -> organization admin, 2 -> clinic admin, 3 -> super admin
-	isSuperAdmin: boolean('is_super_admin').default(false), // might no longer be needed given the addition of 'kind'
-	deletedAt: timestamp("deleted_at"),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 	updatedAt: timestamp("updated_at")
 		.defaultNow()
-		.$onUpdate(() => /* @__PURE__ */ new Date())
+		.$onUpdate(() => new Date())
 		.notNull(),
 });
 
@@ -49,7 +80,7 @@ export const session = pgTable(
 		token: text("token").notNull().unique(),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at")
-			.$onUpdate(() => /* @__PURE__ */ new Date())
+			.$onUpdate(() => new Date())
 			.notNull(),
 		ipAddress: text("ip_address"),
 		userAgent: text("user_agent"),
@@ -94,7 +125,7 @@ export const verification = pgTable(
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at")
 			.defaultNow()
-			.$onUpdate(() => /* @__PURE__ */ new Date())
+			.$onUpdate(() => new Date())
 			.notNull(),
 	},
 	(table) => [index("verification_identifier_idx").on(table.identifier)],
@@ -119,31 +150,36 @@ export const accountRelations = relations(account, ({ one }) => ({
 	}),
 }));
 
-export const userOrganizationAccess = pgTable('user_organization_access', {
-	userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }).notNull(),
+
+export const profileOrganizationAccess = pgTable('profile_organization_access', {
+	profileId: uuid('profile_id').references(() => profile.id, { onDelete: 'cascade' }).notNull(),
 	organizationId: uuid('organization_id').references(() => organizations.id).notNull(),
 }, (t) => ([{
-	pk: primaryKey({ columns: [t.userId, t.organizationId] }),
+	pk: primaryKey({ columns: [t.profileId, t.organizationId] }),
 }]));
 
-export const userClinicAccess = pgTable('user_clinic_access', {
-	userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }).notNull(),
+export const profileClinicAccess = pgTable('profile_clinic_access', {
+	profileId: text('user_id').references(() => user.id, { onDelete: 'cascade' }).notNull(),
 	clinicId: uuid('clinic_id').references(() => clinics.id).notNull(),
 }, (t) => ([{
-	pk: primaryKey({ columns: [t.userId, t.clinicId] }),
+	pk: primaryKey({ columns: [t.profileId, t.clinicId] }),
 }]));
 
-export const usersRelations = relations(user, ({ many }) => ({
-	orgAccess: many(userOrganizationAccess),
-	clinicAccess: many(userClinicAccess),
+export const profileRelations = relations(profile, ({ many, one }) => ({
+	orgAccess: many(profileOrganizationAccess),
+	clinicAccess: many(profileClinicAccess),
+	user: one(user, {
+		fields: [profile.userId],
+		references: [user.id],
+	}),
 }));
 
-export const userOrgRelations = relations(userOrganizationAccess, ({ one }) => ({
-	user: one(user, { fields: [userOrganizationAccess.userId], references: [user.id] }),
-	organization: one(organizations, { fields: [userOrganizationAccess.organizationId], references: [organizations.id] }),
+export const profileOrgRelations = relations(profileOrganizationAccess, ({ one }) => ({
+	profile: one(profile, { fields: [profileOrganizationAccess.profileId], references: [profile.id] }),
+	organization: one(organizations, { fields: [profileOrganizationAccess.organizationId], references: [organizations.id] }),
 }));
 
-export const userClinicRelations = relations(userClinicAccess, ({ one }) => ({
-	user: one(user, { fields: [userClinicAccess.userId], references: [user.id] }),
-	clinic: one(clinics, { fields: [userClinicAccess.clinicId], references: [clinics.id] }),
+export const profileClinicRelations = relations(profileClinicAccess, ({ one }) => ({
+	profile: one(profile, { fields: [profileClinicAccess.profileId], references: [profile.id] }),
+	clinic: one(clinics, { fields: [profileClinicAccess.clinicId], references: [clinics.id] }),
 }));

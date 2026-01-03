@@ -20,15 +20,15 @@ function generateCNPJ() {
 	return n.join('');
 }
 
-const orgs: Array<typeof schemas.organizations.$inferInsert> = new Array(50);
+const orgs: Array<typeof schemas.organizations.$inferInsert> = new Array(100);
 
 
 for (let i = 0; i < orgs.length; i++) {
 	const encryptedCnpj = await encrypt(generateCNPJ());
 	orgs[i] = {
 		name: faker.company.name(),
-		plan: faker.helpers.arrayElement([0, 1]),
-		status: faker.helpers.arrayElement(['active', 'defaulting']),
+		plan: faker.helpers.arrayElement(['gold', 'silver']),
+		status: faker.helpers.arrayElement(['active', 'defaulting', 'grace_period', 'suspended']),
 		govId: `${encryptedCnpj.iv}:${encryptedCnpj.data}`,
 	};
 }

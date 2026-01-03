@@ -3,14 +3,13 @@ import {
 	and,
 	count, eq, ilike, or } from 'drizzle-orm';
 import { db } from '../db';
-import { user, userOrganizationAccess } from '../db/schema';
+import { profile, profileOrganizationAccess } from '../db/schema';
 import { decrypt, encrypt } from '../lib/crypto';
 
 const createBeneficiaryDTO = t.Object({
 	name: t.String(),
 	email: t.String(),
-	image: t.Optional(t.String()),
-	plan: t.Optional(t.Integer()),
+	plan: t.Union([t.Literal('silver'), t.Literal('gold')]),
 	govId: t.Optional(t.String()),
 	organizationId: t.Optional(t.String())
 });
@@ -18,55 +17,53 @@ const createBeneficiaryDTO = t.Object({
 const updateBeneficiaryDTO = t.Partial(createBeneficiaryDTO);
 
 const beneficiaryListBaseFilters = [
-	or(eq(user.kind, 0), eq(user.kind, 1)),
+	or(eq(profile.role, 'beneficiary'), eq(profile.role, 'clinic_admin')),
 ];
 
 const beneficiaryBaseSelect = {
-	id: user.id,
-	name: user.name,
-	email: user.email,
-	emailVerified: user.emailVerified,
-	image: user.image,
-	status: user.status,
-	plan: user.plan,
-	govId: user.govId,
-	organizationId: userOrganizationAccess.organizationId,
-	createdAt: user.createdAt,
-	updatedAt: user.updatedAt,
+	id: profile.id,
+	name: profile.name,
+	email: profile.email,
+	status: profile.status,
+	plan: profile.plan,
+	govId: profile.govId,
+	organizationId: profileOrganizationAccess.organizationId,
+	createdAt: profile.createdAt,
+	updatedAt: profile.updatedAt,
 }
 
 export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
 	.get('/', async ({ query: { page, limit, ...f } }) => {
 
 		
-		const baseQuery = db.select({ ...beneficiaryBaseSelect }).from(user).leftJoin(userOrganizationAccess, eq(user.id, userOrganizationAccess.userId));
+		const baseQuery = db.select({ ...beneficiaryBaseSelect }).from(profile).leftJoin(profileOrganizationAccess, eq(profile.id, profileOrganizationAccess.profileId));
 
 		const filters = [...beneficiaryListBaseFilters];
-		if (f.organizationId) filters.push(eq(userOrganizationAccess.organizationId, f.organizationId));
+		if (f.organizationId) filters.push(eq(profileOrganizationAccess.organizationId, f.organizationId));
 
 		if (f.govId) { // govId filter
 			const encrypted = await encrypt(f.govId);
-			filters.push(eq(user.govId, `${encrypted.iv}:${encrypted.data}`));
+			filters.push(eq(profile.govId, `${encrypted.iv}:${encrypted.data}`));
 		}
 
-		if (f.name) filters.push(ilike(user.name, `%${f.name}%`));
+		if (f.name) filters.push(ilike(profile.name, `%${f.name}%`));
 		
  
 		const rows = await baseQuery.where(and(...filters)).limit(limit).offset(limit * page);
-		const [total] = await db.select({ count: count() }).from(user).leftJoin(userOrganizationAccess, eq(user.id, userOrganizationAccess.userId)).where(and(...filters));
+		const [total] = await db.select({ count: count() }).from(profile).leftJoin(profileOrganizationAccess, eq(profile.id, profileOrganizationAccess.profileId)).where(and(...filters));
 	
 
 
-		const list = await Promise.all(rows.map(async user => {
-			if (!user.govId) return user;
+		const list = await Promise.all(rows.map(async profile => {
+			if (!profile.govId) return profile;
 
-			const parts = user.govId.split(":");
-			if (parts.length !== 2) return user;
+			const parts = profile.govId.split(":");
+			if (parts.length !== 2) return profile;
 
 			const [iv, data] = parts as [string, string];
 			const decrypted = await decrypt({ iv, data });
 			return {
-				...user,
+				...profile,
 				govId: decrypted,
 			}
 		}));
@@ -88,24 +85,24 @@ export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
 	.get(
 		'/:id',
 		async ({ params: { id }, status }) => {
-			const result = await db.select({ ...beneficiaryBaseSelect }).from(user).leftJoin(userOrganizationAccess, eq(user.id, userOrganizationAccess.userId)).where(eq(user.id, id));
+			const result = await db.select({ ...beneficiaryBaseSelect }).from(profile).leftJoin(profileOrganizationAccess, eq(profile.id, profileOrganizationAccess.profileId)).where(eq(profile.id, id));
 
 
 			if (result.length === 0) {
-				return status(404, 'User not found');
+				return status(404, 'profile not found');
 			}
 
-			const userResult = result.at(0)!; // org is guaranteed to exist due to last check
-			if (!userResult.govId) return userResult;
-			const parts = userResult.govId.split(":");
+			const profileResult = result.at(0)!; // org is guaranteed to exist due to last check
+			if (!profileResult.govId) return profileResult;
+			const parts = profileResult.govId.split(":");
 			if (parts.length !== 2) {
-				console.warn(`user: ${userResult.id} isn't properly encrypted`); // todo: proper logging
-				return userResult;
+				console.warn(`profile: ${profileResult.id} isn't properly encrypted`); // todo: proper logging
+				return profileResult;
 			}
 			const [iv, data] = parts as [string, string] // safe cast due to last check
 
-			userResult.govId = await decrypt({ iv, data });
-			return userResult;
+			profileResult.govId = await decrypt({ iv, data });
+			return profileResult;
 
 		},
 		{
@@ -129,34 +126,24 @@ export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
 			}
 
 			const result = await db.transaction(async () => {
-				const newUserId = Bun.randomUUIDv7();
-
-				const userResult = await db.insert(user).values({
-					id: newUserId,
+				const [p] = await db.insert(profile).values({
 					email: body.email,
 					name: body.name,
-					emailVerified: true,
-					isSuperAdmin: false,
-					image: undefined,
+					plan: body.plan,
 					govId: payload.govId,
-					kind: 0, // beneficiary		TODO: create an enum and to this properly...
 				}).returning();
 
-				if (body.organizationId) {
-					await db.insert(userOrganizationAccess).values({
-						userId: newUserId,
+				if (body.organizationId && p) {
+					await db.insert(profileOrganizationAccess).values({
+						profileId: p?.id,
 						organizationId: body.organizationId,
 					})
 				}
 
-				return userResult;
+				return p;
 			});
 
-			return result[0];
-
-
-
-
+			return result;
 		},
 		{
 			body: createBeneficiaryDTO,
@@ -173,13 +160,13 @@ export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
 			}
 
 			const result = await db
-				.update(user)
+				.update(profile)
 				.set(body)
-				.where(eq(user.id, id))
+				.where(eq(profile.id, id))
 				.returning();
 
 			if (result.length === 0) {
-				return status(404, 'User not found');
+				return status(404, 'profile not found');
 			}
 
 			return result[0];
@@ -196,12 +183,12 @@ export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
 		'/:id',
 		async ({ params: { id }, status }) => {
 			const result = await db
-				.delete(user)
-				.where(eq(user.id, id))
+				.delete(profile)
+				.where(eq(profile.id, id))
 				.returning();
 
 			if (result.length === 0) {
-				return status(404, 'User not found');
+				return status(404, 'profile not found');
 			}
 
 			return { success: true, deletedId: result[0]!.id };

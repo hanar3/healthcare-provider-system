@@ -21,8 +21,8 @@ function generateRG(): string {
 
 const orgs = await db.query.organizations.findMany();
 
-const users: typeof schemas.user.$inferInsert[] = [];
-const usersOrganizationAccess: typeof schemas.userOrganizationAccess.$inferInsert[] = [];
+const profiles: typeof schemas.profile.$inferInsert[] = [];
+const profilesOrganizationAccess: typeof schemas.profileOrganizationAccess.$inferInsert[] = [];
 
 
 
@@ -33,18 +33,20 @@ for (let i = 0; i < orgs.length; i++) {
 		// const email = faker.internet.email();
 		const newUserId = Bun.randomUUIDv7();
 
-		users.push({
+		profiles.push({
 			id: newUserId,
 			name: faker.person.fullName(),
-			email: `fake-email-${j}_${i}@a.com`,
-			emailVerified: true,
-			isSuperAdmin: false,
+			email: `fake-email-${i}-${j}@a.com`,
 			govId: `${encryptedRG.iv}:${encryptedRG.data}`,
+			plan: faker.helpers.arrayElement(['gold', 'silver']),
+			status: faker.helpers.arrayElement(['active', 'defaulting', 'grace_period', 'suspended']),
+			role: 'beneficiary',
+
 		});
 
 		if (orgs[i]) {
-			usersOrganizationAccess.push({
-				userId: newUserId,
+			profilesOrganizationAccess.push({
+				profileId: newUserId,
 				organizationId: orgs[i]!.id,
 			})
 		}
@@ -53,8 +55,8 @@ for (let i = 0; i < orgs.length; i++) {
 
 
 await db.transaction(async (tx) => {
-	await tx.insert(schemas.user).values(users).returning();
-	await tx.insert(schemas.userOrganizationAccess).values(usersOrganizationAccess).returning();
+	await tx.insert(schemas.profile).values(profiles).returning();
+	await tx.insert(schemas.profileOrganizationAccess).values(profilesOrganizationAccess).returning();
 });
 
 
