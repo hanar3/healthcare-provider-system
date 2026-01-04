@@ -36,11 +36,16 @@ const formatCNPJ = (v: string) =>
 		.replace(/\D/g, "")
 		.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
 
-const plans = ["Prata", "Ouro"];
+const plans = {
+	silver: "Prata",
+	gold: "Ouro",
+};
 
 const statusMap = {
 	active: "Adimplente",
 	defaulting: "Inadimplente",
+	grace_period: "Periodo de carência",
+	suspended: "Suspenso",
 };
 
 export const columns: ColumnDef<Organization>[] = [
@@ -71,7 +76,9 @@ export const columns: ColumnDef<Organization>[] = [
 		accessorKey: "status",
 		header: "Status",
 		cell: (info) => {
-			const value = info.getValue<"active" | "defaulting">();
+			const value = info.getValue<
+				"active" | "defaulting" | "grace_period" | "suspended"
+			>();
 			return (
 				<Badge
 					className={cn({
@@ -81,7 +88,7 @@ export const columns: ColumnDef<Organization>[] = [
 					variant="outline"
 				>
 					{value === "active" ? <BadgeCheckIcon /> : <BadgeX />}
-					{value}
+					{statusMap[value]}
 				</Badge>
 			);
 		},
@@ -90,17 +97,17 @@ export const columns: ColumnDef<Organization>[] = [
 		accessorKey: "plan",
 		header: "Plano",
 		cell: (info) => {
-			const value = info.getValue<0 | 1>();
+			const value = info.getValue<"silver" | "gold">();
 			return (
 				<Badge
 					className={cn({
-						"bg-stone-300": value === 0,
-						"bg-amber-300": value === 1,
+						"bg-stone-300": value === "silver",
+						"bg-amber-300": value === "gold",
 					})}
 					variant="secondary"
 				>
 					<Award />
-					{plans[info.getValue<number>()]}
+					{plans[value]}
 				</Badge>
 			);
 		},
