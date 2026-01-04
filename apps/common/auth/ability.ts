@@ -3,12 +3,12 @@ import { AbilityBuilder, createMongoAbility, defineAbility, type MongoAbility } 
 // Define shapes for TypeScript
 export type Actions = 'manage' | 'create' | 'read' | 'update' | 'delete';
 export type Subjects = 'all' | 'Organization' | 'Clinic' | 'Beneficiary' | 'Doctor' | 'User';
-
+export type UserRole = "benecifiary" | "organization_admin" | "clinic_admin" | "super_admin";
 export type AppAbility = MongoAbility<[Actions, Subjects]>;
 
 interface UserPayload {
 	id: number;
-	isSuperAdmin: boolean;
+	role: UserRole;
 	orgAccessIds: number[];    // Array of Org IDs user can access
 	clinicAccessIds: number[]; // Array of Clinic IDs user can access
 }
@@ -16,7 +16,7 @@ interface UserPayload {
 export function defineAbilityFor(user: UserPayload) {
 	const { can, cannot, build } = new AbilityBuilder<AppAbility>(createMongoAbility);
 	return defineAbility((can) => {
-		if (user.isSuperAdmin) {
+		if (user.role === "super_admin") {
 			can('manage', 'all');
 		}
 
