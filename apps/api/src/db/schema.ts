@@ -28,7 +28,6 @@ export const organizations = pgTable('organizations', {
 	govId: text('gov_id'), 
 	createdAt: timestamp('created_at').defaultNow(),
 	updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
-	deletedAt: timestamp("deleted_at"),
 });
 
 export const clinics = pgTable('clinics', {
@@ -38,7 +37,6 @@ export const clinics = pgTable('clinics', {
 	govId: text('gov_id'),
 	createdAt: timestamp('created_at').defaultNow(),
 	updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
-	deletedAt: timestamp("deleted_at"),
 });
 
 export const profile = pgTable("profile", {

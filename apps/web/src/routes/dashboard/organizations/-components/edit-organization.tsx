@@ -35,53 +35,50 @@ const schema = z.object({
 	name: z
 		.string()
 		.min(5, "Nome/Razão social precisa ter pelo menos 5 caracteres"),
-	status: z.string(),
-	plan: z.number(),
+	status: z.enum(["active", "defaulting", "grace_period", "suspended"]),
+	plan: z.enum(["silver", "gold"]),
 	govId: z.string(),
 });
 
+type FormType = z.infer<typeof schema>;
 export function EditOrganizationDialog({ id }: { id: string }) {
 	const [open, setOpen] = useState(false);
+
+	const { data, refetch } = useQuery({
+		...organizationQuery(id),
+		enabled: open,
+	});
 	const { mutate: editOrganization } = useMutation({
 		mutationFn: async (payload: OrganizationCreate) => {
 			await client.organizations({ id }).patch({ ...payload });
 		},
-		onSuccess: (_data, _variables, _onMutateResult, context) => {
+		onSuccess: async (_data, _variables, _onMutateResult, context) => {
 			context.client.invalidateQueries({
 				queryKey: [queryKeys.LIST_ORGANIZATIONS],
 			});
+			await refetch();
 		},
 	});
 
 	const form = useForm({
 		defaultValues: {
-			name: "",
-			status: "",
-			govId: "",
-			plan: 0,
+			name: data?.name ?? "",
+			status: data?.status ?? "",
+			govId: data?.govId ?? "",
+			plan: data?.plan ?? "",
 		},
 		validators: {
 			onSubmit: schema,
 		},
 		onSubmit: ({ value }) => {
-			editOrganization(value);
+			editOrganization({
+				...value,
+				plan: value.plan as FormType["plan"],
+				status: value.status as FormType["status"],
+			});
 			setOpen(false);
 		},
 	});
-
-	const { data } = useQuery(
-		organizationQuery(id, {
-			onSuccess: (data) => {
-				if (data) {
-					form.setFieldValue("name", data.name);
-					form.setFieldValue("status", data.status || "");
-					form.setFieldValue("govId", data.govId || "");
-					form.setFieldValue("plan", data.plan || 0);
-				}
-			},
-		}),
-	);
-
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger>
@@ -204,23 +201,21 @@ export function EditOrganizationDialog({ id }: { id: string }) {
 									<Field data-invalid={isInvalid}>
 										<FieldLabel htmlFor={field.name}>Plano</FieldLabel>
 										<Select
-											value={String(field.state.value)}
-											onValueChange={(value) =>
-												field.handleChange(Number(value))
-											}
+											value={field.state.value}
+											onValueChange={(value) => field.handleChange(value)}
 										>
 											<SelectTrigger
 												className="w-[180px]"
 												id={field.name}
-												value={String(field.state.value)}
+												value={field.state.value}
 											>
 												<SelectValue placeholder="Selecione um valor" />
 											</SelectTrigger>
 											<SelectContent>
 												<SelectGroup>
 													<SelectLabel>Plano da empresa</SelectLabel>
-													<SelectItem value="0">Prata</SelectItem>
-													<SelectItem value="1">Ouro</SelectItem>
+													<SelectItem value="silver">Prata</SelectItem>
+													<SelectItem value="gold">Ouro</SelectItem>
 												</SelectGroup>
 											</SelectContent>
 										</Select>

@@ -36,9 +36,11 @@ import { useParams } from "@tanstack/react-router";
 const schema = z.object({
 	name: z.string(),
 	email: z.string(),
-	plan: z.number(),
+	plan: z.enum(["silver", "gold"]),
 	govId: z.string(),
 });
+
+type FormType = z.infer<typeof schema>;
 
 export function CreateBeneficiaryDialog() {
 	const { organizationId } = useParams({
@@ -65,15 +67,19 @@ export function CreateBeneficiaryDialog() {
 		defaultValues: {
 			name: "",
 			email: "",
-			plan: 0,
+			plan: "",
 			govId: "",
 		},
 		validators: {
 			onSubmit: schema,
 		},
-		onSubmit: ({ value }) => {
-			createBeneficiary(value);
+		onSubmit: ({ value, formApi }) => {
+			createBeneficiary({
+				...value,
+				plan: value.plan as FormType["plan"],
+			});
 			setOpen(false);
+			formApi.reset();
 		},
 	});
 
@@ -189,9 +195,7 @@ export function CreateBeneficiaryDialog() {
 										<FieldLabel htmlFor={field.name}>Plano</FieldLabel>
 										<Select
 											value={String(field.state.value)}
-											onValueChange={(value) =>
-												field.handleChange(Number(value))
-											}
+											onValueChange={(value) => field.handleChange(value)}
 										>
 											<SelectTrigger
 												className="w-[180px]"
@@ -203,8 +207,8 @@ export function CreateBeneficiaryDialog() {
 											<SelectContent>
 												<SelectGroup>
 													<SelectLabel>Plano do beneficiário</SelectLabel>
-													<SelectItem value="0">Prata</SelectItem>
-													<SelectItem value="1">Ouro</SelectItem>
+													<SelectItem value="silver">Prata</SelectItem>
+													<SelectItem value="gold">Ouro</SelectItem>
 												</SelectGroup>
 											</SelectContent>
 										</Select>

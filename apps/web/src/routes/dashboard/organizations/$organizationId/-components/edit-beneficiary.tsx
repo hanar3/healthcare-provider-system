@@ -35,10 +35,11 @@ import { useState } from "react";
 const schema = z.object({
 	name: z.string(),
 	email: z.string(),
-	plan: z.number(),
+	plan: z.enum(["silver", "gold"]),
 	govId: z.string(),
 });
 
+type FormType = z.infer<typeof schema>;
 export function EditBenefciaryDialog({ id }: { id: string }) {
 	const [open, setOpen] = useState(false);
 	const { data, refetch } = useQuery(beneficiaryById(id));
@@ -58,7 +59,7 @@ export function EditBenefciaryDialog({ id }: { id: string }) {
 		defaultValues: {
 			name: data?.name ?? "",
 			email: data?.email ?? "",
-			plan: data?.plan ?? 0,
+			plan: data?.plan ?? "",
 			govId: data?.govId ?? "",
 		},
 		validators: {
@@ -68,7 +69,7 @@ export function EditBenefciaryDialog({ id }: { id: string }) {
 			await editBeneficiary({
 				name: value.name,
 				email: value.email,
-				plan: value.plan,
+				plan: value.plan as FormType["plan"],
 				govId: value.govId,
 			});
 
@@ -191,9 +192,7 @@ export function EditBenefciaryDialog({ id }: { id: string }) {
 										<FieldLabel htmlFor={field.name}>Plano</FieldLabel>
 										<Select
 											value={String(field.state.value)}
-											onValueChange={(value) =>
-												field.handleChange(Number(value))
-											}
+											onValueChange={(value) => field.handleChange(value)}
 										>
 											<SelectTrigger
 												className="w-[180px]"
@@ -205,8 +204,8 @@ export function EditBenefciaryDialog({ id }: { id: string }) {
 											<SelectContent>
 												<SelectGroup>
 													<SelectLabel>Plano do beneficário</SelectLabel>
-													<SelectItem value="0">Prata</SelectItem>
-													<SelectItem value="1">Ouro</SelectItem>
+													<SelectItem value="silver">Prata</SelectItem>
+													<SelectItem value="gold">Ouro</SelectItem>
 												</SelectGroup>
 											</SelectContent>
 										</Select>

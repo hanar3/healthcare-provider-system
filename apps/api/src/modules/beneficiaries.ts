@@ -1,7 +1,7 @@
 import { Elysia, t } from 'elysia';
 import {
 	and,
-	count, eq, ilike, or } from 'drizzle-orm';
+	count, desc, eq, ilike, or } from 'drizzle-orm';
 import { db } from '../db';
 import { profile, profileOrganizationAccess } from '../db/schema';
 import { decrypt, encrypt } from '../lib/crypto';
@@ -49,7 +49,7 @@ export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
 		if (f.name) filters.push(ilike(profile.name, `%${f.name}%`));
 		
  
-		const rows = await baseQuery.where(and(...filters)).limit(limit).offset(limit * page);
+		const rows = await baseQuery.where(and(...filters)).limit(limit).offset(limit * page).orderBy(desc(profile.createdAt));;
 		const [total] = await db.select({ count: count() }).from(profile).leftJoin(profileOrganizationAccess, eq(profile.id, profileOrganizationAccess.profileId)).where(and(...filters));
 	
 
@@ -100,7 +100,6 @@ export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
 				return profileResult;
 			}
 			const [iv, data] = parts as [string, string] // safe cast due to last check
-
 			profileResult.govId = await decrypt({ iv, data });
 			return profileResult;
 
@@ -131,6 +130,7 @@ export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
 					name: body.name,
 					plan: body.plan,
 					govId: payload.govId,
+					role: "beneficiary"
 				}).returning();
 
 				if (body.organizationId && p) {

@@ -6,8 +6,16 @@ import { decrypt, encrypt } from '../lib/crypto';
 
 const createOrgDTO = t.Object({
 	name: t.String(),
-	status: t.Optional(t.String()),
-	plan: t.Optional(t.Integer()),
+	status: t.Union([
+		t.Literal('active'), 
+		t.Literal('defaulting'),
+		t.Literal('grace_period'),
+		t.Literal('suspended'),
+	]),
+	plan: t.Union([
+		t.Literal('silver'), 
+		t.Literal('gold')
+	]),
 	govId: t.Optional(t.String())
 });
 
@@ -15,7 +23,7 @@ const updateOrgDTO = t.Partial(createOrgDTO);
 
 export const organizationsController = new Elysia({ prefix: '/organizations' })
 	.get('/', async ({ query: { page, limit } }) => {
-		const data = await db.select().from(organizations).where(isNull(organizations.deletedAt)).offset(page * limit).limit(limit).orderBy(desc(organizations.createdAt));
+		const data = await db.select().from(organizations).offset(page * limit).limit(limit).orderBy(desc(organizations.createdAt));
 		const [total] = await db.select({ count: count() }).from(organizations);
 
 
@@ -124,8 +132,7 @@ export const organizationsController = new Elysia({ prefix: '/organizations' })
 		async ({ params: { id }, status }) => {
 			try {
 				const result = await db
-					.update(organizations)
-					.set({ deletedAt: new Date() })
+					.delete(organizations)
 					.where(eq(organizations.id, id))
 					.returning();
 
