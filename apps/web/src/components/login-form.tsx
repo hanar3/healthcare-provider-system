@@ -17,14 +17,16 @@ export function LoginForm({
 			password: "",
 		},
 		onSubmit: async ({ value }) => {
-			await authClient.signIn.email({
+			const result = await authClient.signIn.email({
 				email: value.email,
 				password: value.password,
 			});
 
-			navigate({
-				to: "/dashboard",
-			});
+			if (result.data) {
+				navigate({
+					to: "/dashboard",
+				});
+			}
 		},
 	});
 
