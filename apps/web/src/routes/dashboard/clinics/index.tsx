@@ -31,15 +31,14 @@ function RouteComponent() {
       <div className="w-full flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-semibold text-foreground tracking-tight">
-            Clinicas
+            Clínicas
           </h1>
           <p className="text-muted-foreground mt-1">
-            Visualize e gerencie clinicas ativas.
+            Visualize e gerencie clínicas ativas.
           </p>
         </div>
         <div className="flex gap-3">
           <CreateClinicDialog />
-          {/* <CreateOrganizationDialog /> */}
         </div>
       </div>
 

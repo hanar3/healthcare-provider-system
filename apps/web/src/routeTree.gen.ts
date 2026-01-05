@@ -20,6 +20,7 @@ import { Route as DashboardClinicsIndexRouteImport } from './routes/dashboard/cl
 import { Route as DashboardBeneficiariesIndexRouteImport } from './routes/dashboard/beneficiaries/index'
 import { Route as DashboardOrganizationsOrganizationIdRouteRouteImport } from './routes/dashboard/organizations/$organizationId/route'
 import { Route as DashboardOrganizationsOrganizationIdIndexRouteImport } from './routes/dashboard/organizations/$organizationId/index'
+import { Route as DashboardClinicsClinicIdIndexRouteImport } from './routes/dashboard/clinics/$clinicId/index'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -81,6 +82,12 @@ const DashboardOrganizationsOrganizationIdIndexRoute =
     path: '/',
     getParentRoute: () => DashboardOrganizationsOrganizationIdRouteRoute,
   } as any)
+const DashboardClinicsClinicIdIndexRoute =
+  DashboardClinicsClinicIdIndexRouteImport.update({
+    id: '/clinics/$clinicId/',
+    path: '/clinics/$clinicId/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/clinics': typeof DashboardClinicsIndexRoute
   '/dashboard/organizations/': typeof DashboardOrganizationsIndexRoute
   '/dashboard/settings': typeof DashboardSettingsIndexRoute
+  '/dashboard/clinics/$clinicId': typeof DashboardClinicsClinicIdIndexRoute
   '/dashboard/organizations/$organizationId/': typeof DashboardOrganizationsOrganizationIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -103,6 +111,7 @@ export interface FileRoutesByTo {
   '/dashboard/clinics': typeof DashboardClinicsIndexRoute
   '/dashboard/organizations': typeof DashboardOrganizationsIndexRoute
   '/dashboard/settings': typeof DashboardSettingsIndexRoute
+  '/dashboard/clinics/$clinicId': typeof DashboardClinicsClinicIdIndexRoute
   '/dashboard/organizations/$organizationId': typeof DashboardOrganizationsOrganizationIdIndexRoute
 }
 export interface FileRoutesById {
@@ -117,6 +126,7 @@ export interface FileRoutesById {
   '/dashboard/clinics/': typeof DashboardClinicsIndexRoute
   '/dashboard/organizations/': typeof DashboardOrganizationsIndexRoute
   '/dashboard/settings/': typeof DashboardSettingsIndexRoute
+  '/dashboard/clinics/$clinicId/': typeof DashboardClinicsClinicIdIndexRoute
   '/dashboard/organizations/$organizationId/': typeof DashboardOrganizationsOrganizationIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -132,6 +142,7 @@ export interface FileRouteTypes {
     | '/dashboard/clinics'
     | '/dashboard/organizations/'
     | '/dashboard/settings'
+    | '/dashboard/clinics/$clinicId'
     | '/dashboard/organizations/$organizationId/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -142,6 +153,7 @@ export interface FileRouteTypes {
     | '/dashboard/clinics'
     | '/dashboard/organizations'
     | '/dashboard/settings'
+    | '/dashboard/clinics/$clinicId'
     | '/dashboard/organizations/$organizationId'
   id:
     | '__root__'
@@ -155,6 +167,7 @@ export interface FileRouteTypes {
     | '/dashboard/clinics/'
     | '/dashboard/organizations/'
     | '/dashboard/settings/'
+    | '/dashboard/clinics/$clinicId/'
     | '/dashboard/organizations/$organizationId/'
   fileRoutesById: FileRoutesById
 }
@@ -243,6 +256,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardOrganizationsOrganizationIdIndexRouteImport
       parentRoute: typeof DashboardOrganizationsOrganizationIdRouteRoute
     }
+    '/dashboard/clinics/$clinicId/': {
+      id: '/dashboard/clinics/$clinicId/'
+      path: '/clinics/$clinicId'
+      fullPath: '/dashboard/clinics/$clinicId'
+      preLoaderRoute: typeof DashboardClinicsClinicIdIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
   }
 }
 
@@ -284,6 +304,7 @@ interface DashboardRouteRouteChildren {
   DashboardBeneficiariesIndexRoute: typeof DashboardBeneficiariesIndexRoute
   DashboardClinicsIndexRoute: typeof DashboardClinicsIndexRoute
   DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute
+  DashboardClinicsClinicIdIndexRoute: typeof DashboardClinicsClinicIdIndexRoute
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
@@ -293,6 +314,7 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardBeneficiariesIndexRoute: DashboardBeneficiariesIndexRoute,
   DashboardClinicsIndexRoute: DashboardClinicsIndexRoute,
   DashboardSettingsIndexRoute: DashboardSettingsIndexRoute,
+  DashboardClinicsClinicIdIndexRoute: DashboardClinicsClinicIdIndexRoute,
 }
 
 const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(

@@ -6,6 +6,7 @@ export const profileRole = pgEnum('profile_role_enum', [
 	'organization_admin',
 	'clinic_admin',
 	'super_admin',
+	'doctor'
 ]);
 
 export const plan = pgEnum('plan_enum', [

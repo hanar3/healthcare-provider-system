@@ -1,7 +1,7 @@
 import { DataTable } from "@/components/data-table";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { beneficiariesQuery } from "@/routes/dashboard/organizations/$organizationId/-queries";
-
+import { Link } from "@tanstack/react-router";
 import type { ClinicsGet } from "@/api";
 import type {
 	ColumnDef,
@@ -27,7 +27,16 @@ export const columns: ColumnDef<Clinic>[] = [
 		accessorKey: "name",
 		header: "Nome",
 		cell: (info) => {
-			return info.getValue<string>();
+			return (
+				<Link
+					to="/dashboard/clinics/$clinicId"
+					params={{ clinicId: info.row.original.id }}
+					// search={{ page: 1, perPage: 10 }}
+					className="underline text-blue-600 hover:text-blue-800 visited:text-purple-600"
+				>
+					{info.getValue<string>()}
+				</Link>
+			);
 		},
 	},
 	{
