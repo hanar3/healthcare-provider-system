@@ -33,7 +33,7 @@ const doctorBaseSelect = {
 	updatedAt: profile.updatedAt,
 }
 
-export const doctorsController = new Elysia({ prefix: '/beneficiaries' })
+export const doctorsController = new Elysia({ prefix: '/doctors' })
 	.get('/', async ({ query: { page, limit, ...f } }) => {
 
 		

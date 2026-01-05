@@ -21,6 +21,13 @@ export const paymentStatus = pgEnum('payment_status_enum', [
 	'grace_period'
 ]);
 
+
+export const specialties = pgTable('doctor_specialties', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	name: text('name').notNull(),
+	slug: text('slug').notNull()
+});
+
 export const organizations = pgTable('organizations', {
 	id: uuid('id').primaryKey().defaultRandom(),
 	name: text('name').notNull(),
@@ -41,7 +48,7 @@ export const clinics = pgTable('clinics', {
 });
 
 export const profile = pgTable("profile", {
-	id: uuid("id").primaryKey().defaultRandom(),
+	id: uuid("id").primaryKey().defaultRandom().notNull(),
 	name: text("name").notNull(),
 	email: text("email").notNull().unique(),
 	status: paymentStatus('status').default('active'), 
@@ -158,15 +165,21 @@ export const profileOrganizationAccess = pgTable('profile_organization_access', 
 }]));
 
 export const profileClinicAccess = pgTable('profile_clinic_access', {
-	profileId: text('user_id').references(() => user.id, { onDelete: 'cascade' }).notNull(),
+	profileId: uuid('profile_id').references(() => profile.id, { onDelete: 'cascade' }).notNull(),
 	clinicId: uuid('clinic_id').references(() => clinics.id).notNull(),
 }, (t) => ([{
 	pk: primaryKey({ columns: [t.profileId, t.clinicId] }),
 }]));
 
+export const profileSpecialties = pgTable('profile_specialties', {
+	profileId: uuid('profile_id').references(() => profile.id, { onDelete: 'cascade' }).notNull(),
+	specialtyId: uuid('specialty_id').references(() => specialties.id).notNull(),
+});
+
 export const profileRelations = relations(profile, ({ many, one }) => ({
 	orgAccess: many(profileOrganizationAccess),
 	clinicAccess: many(profileClinicAccess),
+	specialties: many(profileSpecialties),
 	user: one(user, {
 		fields: [profile.userId],
 		references: [user.id],

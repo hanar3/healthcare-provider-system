@@ -3,8 +3,6 @@ import { db } from "../src/db"
 import * as schemas from "../src/db/schema";
 import { encrypt } from "../src/lib/crypto";
 
-
-
 function generateRG(): string {
 	const base = Math.floor(Math.random() * 1e8)
 		.toString()
