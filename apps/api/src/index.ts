@@ -5,6 +5,7 @@ import { auth } from "./lib/auth";
 import { organizationsController } from './modules/organizations';
 import { beneficiariesController } from './modules/beneficiaries';
 import { clinicsController } from './modules/clinics';
+import { doctorsController } from './modules/doctors';
 
 const betterAuthView = (context: Context) => {
 	const BETTER_AUTH_ACCEPT_METHODS = ["POST", "GET"]
@@ -21,6 +22,7 @@ const app = new Elysia()
 	.use(organizationsController)
 	.use(beneficiariesController)
 	.use(clinicsController)
+	.use(doctorsController)
 	.get('/', () => 'Health Provider API Active')
 	.get('/health', () => ({ status: 'ok', timestamp: new Date() }))
 	.all("/api/auth/*", betterAuthView)

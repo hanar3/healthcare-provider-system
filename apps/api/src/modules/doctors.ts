@@ -2,9 +2,10 @@
 import { Elysia, t } from 'elysia';
 import {
 	and,
-	count, desc, eq, ilike, or } from 'drizzle-orm';
+	count, desc, eq, ilike, or, 
+	sql } from 'drizzle-orm';
 import { db } from '../db';
-import { profile, profileClinicAccess } from '../db/schema';
+import { profile, profileClinicAccess, profileSpecialties, specialties } from '../db/schema';
 import { decrypt, encrypt } from '../lib/crypto';
 
 const createBeneficiaryDTO = t.Object({
@@ -29,6 +30,18 @@ const doctorBaseSelect = {
 	plan: profile.plan,
 	govId: profile.govId,
 	clinicId: profileClinicAccess.clinicId,
+	specialties: sql<{ id: string; name: string }[]>`
+    coalesce(
+      json_agg(
+        json_build_object(
+          'id', ${specialties.id},
+          'name', ${specialties.name},
+          'slug', ${specialties.slug}
+        )
+      ) filter (where ${specialties.id} is not null),
+      '[]'
+    )
+  `,
 	createdAt: profile.createdAt,
 	updatedAt: profile.updatedAt,
 }
@@ -37,7 +50,12 @@ export const doctorsController = new Elysia({ prefix: '/doctors' })
 	.get('/', async ({ query: { page, limit, ...f } }) => {
 
 		
-		const baseQuery = db.select({ ...doctorBaseSelect }).from(profile).leftJoin(profileClinicAccess, eq(profile.id, profileClinicAccess.profileId));
+		const baseQuery = db.select({ ...doctorBaseSelect })
+			.from(profile)
+			.leftJoin(profileClinicAccess, eq(profile.id, profileClinicAccess.profileId))
+			.leftJoin(profileSpecialties, eq(profile.id, profileSpecialties.profileId))
+			.leftJoin(specialties, eq(profileSpecialties.specialtyId, specialties.id))
+			.groupBy(profile.id, profileClinicAccess.clinicId);
 
 		const filters = [...doctorListBaseFilters];
 		if (f.clinicId) filters.push(eq(profileClinicAccess.clinicId, f.clinicId));
