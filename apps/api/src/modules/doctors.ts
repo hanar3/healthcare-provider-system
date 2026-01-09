@@ -2,21 +2,25 @@
 import { Elysia, t } from 'elysia';
 import {
 	and,
-	count, desc, eq, ilike, or, 
-	sql } from 'drizzle-orm';
+	count, 
+	desc, 
+	eq, 
+	ilike, 
+	sql 
+} from 'drizzle-orm';
 import { db } from '../db';
 import { profile, profileClinicAccess, profileSpecialties, specialties } from '../db/schema';
 import { decrypt, encrypt } from '../lib/crypto';
 
-const createBeneficiaryDTO = t.Object({
+const createDoctorDTO = t.Object({
 	name: t.String(),
 	email: t.String(),
-	plan: t.Union([t.Literal('silver'), t.Literal('gold')]),
 	govId: t.Optional(t.String()),
+	specialties: t.Optional(t.Array(t.String())),
 	clinicId: t.Optional(t.String())
 });
 
-const updateBeneficiaryDTO = t.Partial(createBeneficiaryDTO);
+const updateDoctorDTO = t.Partial(createDoctorDTO);
 
 const doctorListBaseFilters = [
 	eq(profile.role, 'doctor'),
@@ -89,6 +93,9 @@ export const doctorsController = new Elysia({ prefix: '/doctors' })
 
 		return {
 			list,
+			page,
+			limit,
+			totalPages: (total?.count ?? 0) / limit,
 			total: total?.count ?? 0,
 		}
 	}, {
@@ -149,7 +156,7 @@ export const doctorsController = new Elysia({ prefix: '/doctors' })
 					name: body.name,
 					plan: body.plan,
 					govId: payload.govId,
-					role: "beneficiary"
+					role: "doctor"
 				}).returning();
 
 				if (body.clinicId && p) {
@@ -165,7 +172,7 @@ export const doctorsController = new Elysia({ prefix: '/doctors' })
 			return result;
 		},
 		{
-			body: createBeneficiaryDTO,
+			body: createDoctorDTO,
 		}
 	)
 
@@ -194,7 +201,7 @@ export const doctorsController = new Elysia({ prefix: '/doctors' })
 			params: t.Object({
 				id: t.String(),
 			}),
-			body: updateBeneficiaryDTO,
+			body: updateDoctorDTO,
 		}
 	)
 

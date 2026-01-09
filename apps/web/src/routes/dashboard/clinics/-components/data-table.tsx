@@ -31,7 +31,7 @@ export const columns: ColumnDef<Clinic>[] = [
 				<Link
 					to="/dashboard/clinics/$clinicId"
 					params={{ clinicId: info.row.original.id }}
-					// search={{ page: 1, perPage: 10 }}
+					search={{ page: 1, perPage: 10 }}
 					className="underline text-blue-600 hover:text-blue-800 visited:text-purple-600"
 				>
 					{info.getValue<string>()}
