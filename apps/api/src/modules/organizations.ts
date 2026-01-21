@@ -1,19 +1,21 @@
 import { Elysia, t } from 'elysia';
-import { count, desc, eq, isNotNull, isNull } from 'drizzle-orm';
+import { count, desc, eq, ilike, inArray, and } from 'drizzle-orm';
 import { db } from '../db';
 import { organizations } from '../db/schema';
 import { decrypt, encrypt } from '../lib/crypto';
+import { authPlugin } from '../plugins/authPlugin';
+import { defineAbilityFor } from '@workspace/common/auth/ability';
 
 const createOrgDTO = t.Object({
 	name: t.String(),
 	status: t.Union([
-		t.Literal('active'), 
+		t.Literal('active'),
 		t.Literal('defaulting'),
 		t.Literal('grace_period'),
 		t.Literal('suspended'),
 	]),
 	plan: t.Union([
-		t.Literal('silver'), 
+		t.Literal('silver'),
 		t.Literal('gold')
 	]),
 	govId: t.Optional(t.String())
@@ -22,8 +24,25 @@ const createOrgDTO = t.Object({
 const updateOrgDTO = t.Partial(createOrgDTO);
 
 export const organizationsController = new Elysia({ prefix: '/organizations' })
-	.get('/', async ({ query: { page, limit } }) => {
-		const data = await db.select().from(organizations).offset(page * limit).limit(limit).orderBy(desc(organizations.createdAt));
+	.use(authPlugin)
+	.get('/', async ({ query: { page, limit, status: qStatus, name }, profile, status }) => {
+		const rules = defineAbilityFor(profile);
+		if (rules.cannot('read', 'Organization')) return status(401, "Unauthorized");
+		const filters = [];
+
+		if (name) {
+			filters.push(ilike(organizations.name, `%${name}%`));
+		}
+
+		if (qStatus) {
+			filters.push(eq(organizations.status, qStatus));
+		}
+
+		if (profile.orgAccessIds.length > 0) {
+			filters.push(inArray(organizations.id, profile.orgAccessIds))
+		}
+
+		const data = await db.select().from(organizations).offset(page * limit).where(and(...filters)).limit(limit).orderBy(desc(organizations.createdAt));
 		const [total] = await db.select({ count: count() }).from(organizations);
 
 
@@ -46,7 +65,16 @@ export const organizationsController = new Elysia({ prefix: '/organizations' })
 			total: total?.count ?? 0,
 		}
 	}, {
+		isSignedIn: true,
 		query: t.Object({
+			name: t.Optional(t.String()),
+			cnpj: t.Optional(t.String()),
+			status: t.Optional(t.Union([
+				t.Literal('active'),
+				t.Literal('defaulting'),
+				t.Literal('grace_period'),
+				t.Literal('suspended'),
+			])),
 			page: t.Number(),
 			limit: t.Number({ maximum: 100 })
 		})

@@ -1,7 +1,6 @@
 import { DataTable } from "@/components/data-table";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { beneficiariesQuery } from "@/routes/dashboard/organizations/$organizationId/-queries";
-
 import type { OrganizationsGet } from "@/api";
 import type {
 	ColumnDef,
@@ -19,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { useParams } from "@tanstack/react-router";
 import { DeleteBeneficiaryDialog } from "./delete-beneficiary";
 import { EditBenefciaryDialog } from "./edit-beneficiary";
+import { Can } from "@/context/casl-context";
 
 type Organization = OrganizationsGet["list"][0];
 
@@ -103,8 +103,8 @@ export const columns: ColumnDef<Organization>[] = [
 		cell: (info) => {
 			return (
 				<div className="flex gap-2">
-					<DeleteBeneficiaryDialog id={info.row.original.id} />
 					<EditBenefciaryDialog id={info.row.original.id} />
+					<DeleteBeneficiaryDialog id={info.row.original.id} />
 				</div>
 			);
 		},

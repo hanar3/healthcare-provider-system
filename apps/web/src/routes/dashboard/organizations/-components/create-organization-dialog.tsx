@@ -30,6 +30,7 @@ import { useMutation } from "@tanstack/react-query";
 import client, { type OrganizationCreate } from "@/api";
 import { queryKeys } from "../-queries";
 import { useState } from "react";
+import { Can } from "@/context/casl-context";
 
 const schema = z.object({
 	name: z
@@ -79,10 +80,12 @@ export function CreateOrganizationDialog() {
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger className="flex gap-2 items-center bg-primary text-white p-2 rounded-md cursor-pointer text-sm">
-				<Plus size="14px" className="text-sm" />
-				Adicionar Empresa
-			</DialogTrigger>
+			<Can I="create" a="Organization">
+				<DialogTrigger className="flex gap-2 items-center bg-primary text-white p-2 rounded-md cursor-pointer text-sm">
+					<Plus size="14px" className="text-sm" />
+					Adicionar Empresa
+				</DialogTrigger>
+			</Can>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Adicionar empresa</DialogTitle>

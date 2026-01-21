@@ -18,12 +18,6 @@ export const Route = createFileRoute("/dashboard/organizations/")({
 			perPage: Number(search?.perpage ?? 10),
 		} as OrganizationSearch;
 	},
-	loader: async ({ context, location }) => {
-		const search: OrganizationSearch = location.search as OrganizationSearch;
-		return context.queryClient.ensureQueryData(
-			organizationsQuery(search.page, search.perPage),
-		);
-	},
 });
 
 function RouteComponent() {

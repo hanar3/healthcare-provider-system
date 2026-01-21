@@ -1,6 +1,6 @@
 import { DataTable } from "@/components/data-table";
 import { Link } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { organizationsQuery } from "@/routes/dashboard/organizations/-queries";
 
 import type { OrganizationsGet } from "@/api";
@@ -19,6 +19,7 @@ import { BadgeCheckIcon, BadgeX, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DeleteOrganizationDialog } from "./delete-organization";
 import { EditOrganizationDialog } from "./edit-organization";
+import { Can } from "@/context/casl-context";
 
 type Organization = OrganizationsGet["list"][0];
 
@@ -117,8 +118,10 @@ export const columns: ColumnDef<Organization>[] = [
 		cell: (info) => {
 			return (
 				<div className="flex">
-					<DeleteOrganizationDialog id={info.row.original.id} />
 					<EditOrganizationDialog id={info.row.original.id} />
+					<Can I="delete" a="Organization">
+						<DeleteOrganizationDialog id={info.row.original.id} />
+					</Can>
 				</div>
 			);
 		},
@@ -128,7 +131,7 @@ export const columns: ColumnDef<Organization>[] = [
 export function OrganizationsDataTable() {
 	const [pagination, setPagination] = usePaginationSearchParams();
 	const [isPending, startTransition] = useTransition();
-	const { data } = useSuspenseQuery(
+	const { data } = useQuery(
 		organizationsQuery(pagination.pageIndex, pagination.pageSize),
 	);
 

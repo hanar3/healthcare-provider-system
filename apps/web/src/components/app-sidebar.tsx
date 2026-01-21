@@ -150,7 +150,11 @@ export function AppSidebar() {
 				<SidebarGroup />
 			</SidebarContent>
 			<SidebarFooter>
-				<SidebarLogOut isLoading={isLoading} name={me?.name} />
+				<SidebarLogOut
+					isLoading={isLoading}
+					name={me?.name}
+					role={me?.role as string}
+				/>
 			</SidebarFooter>
 		</Sidebar>
 	);

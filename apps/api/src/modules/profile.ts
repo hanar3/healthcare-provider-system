@@ -21,8 +21,6 @@ export const profileController = new Elysia({ prefix: '/profile' })
 					}
 				}
 			}
-
-
 		});
 
 		if (!profileData) return status(404, "Not found");
