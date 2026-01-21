@@ -4,25 +4,33 @@ import {
 	clinics,
 } from '../db/schema';
 import { decrypt, encrypt } from '../lib/crypto';
-import { 
+import {
 	and,
 	count,
-	desc, 
-	eq, 
-	ilike 
+	desc,
+	eq,
+	ilike,
+	inArray
 } from 'drizzle-orm';
+import { authPlugin } from '../plugins/authPlugin';
+import { defineAbilityFor } from "@workspace/common/auth/ability";
 
 const createClinicDTO = t.Object({
 	name: t.String(),
 	address: t.String(),
-	govId: t.Optional(t.String()), 
+	govId: t.Optional(t.String()),
 });
 
 const updateClinicDTO = t.Partial(createClinicDTO);
 
 export const clinicsController = new Elysia({ prefix: '/clinics' })
-	.post('/', async ({ body }) => {
+	.use(authPlugin)
+	.post('/', async ({ body, profile, status }) => {
 		const payload = { ...body };
+		const rules = defineAbilityFor(profile);
+		if (rules.cannot('create', 'Clinic')) {
+			return status(401, 'Unauthorized')
+		}
 
 		if (payload.govId) {
 			const { iv, data } = await encrypt(payload.govId);
@@ -35,17 +43,23 @@ export const clinicsController = new Elysia({ prefix: '/clinics' })
 			govId: body.govId,
 		});
 	}, {
+		isSignedIn: true,
 		body: t.Object({
 			name: t.String(),
 			address: t.String(),
-			govId: t.Optional(t.String()), 
+			govId: t.Optional(t.String()),
 		})
-	})	
-	.get("/", async ({ query }) => {
+	})
+	.get("/", async ({ query, profile, status }) => {
 		const { page, limit } = query;
-	
+		const rules = defineAbilityFor(profile);
+
 		const filters = [];
-		
+
+		if (rules.cannot('read', 'Clinic')) {
+			return status(401, "Cannot list clinics");
+		}
+
 		if (query.name) {
 			filters.push(ilike(clinics.name, `%${query.name}%`));
 		}
@@ -53,7 +67,10 @@ export const clinicsController = new Elysia({ prefix: '/clinics' })
 		if (query.address) {
 			filters.push(ilike(clinics.address, `%${query.name}%`));
 		}
-		
+
+		if (profile.clinicAccessIds.length > 0) {
+			filters.push(inArray(clinics.id, profile.clinicAccessIds))
+		}
 
 		const data = await db.select().from(clinics).where(and(...filters)).offset(page * limit).limit(limit).orderBy(desc(clinics.createdAt));
 		const [total] = await db.select({ count: count() }).from(clinics).where(and(...filters));
@@ -78,6 +95,7 @@ export const clinicsController = new Elysia({ prefix: '/clinics' })
 			total: total?.count ?? 0,
 		}
 	}, {
+		isSignedIn: true,
 		query: t.Object({
 			page: t.Number({ minimum: 0 }),
 			limit: t.Number({ maximum: 100 }),
@@ -87,7 +105,13 @@ export const clinicsController = new Elysia({ prefix: '/clinics' })
 	})
 	.get(
 		'/:id',
-		async ({ params: { id }, status }) => {
+		async ({ params: { id }, status, profile }) => {
+			const rules = defineAbilityFor(profile);
+
+			if (rules.cannot('read', 'Clinic', id)) {
+				return status(401, "You aren't authorized");
+			}
+
 			const result = await db
 				.select()
 				.from(clinics)
@@ -111,6 +135,7 @@ export const clinicsController = new Elysia({ prefix: '/clinics' })
 
 		},
 		{
+			isSignedIn: true,
 			params: t.Object({
 				id: t.String(),
 			}),
@@ -118,8 +143,15 @@ export const clinicsController = new Elysia({ prefix: '/clinics' })
 	)
 	.patch(
 		'/:id',
-		async ({ params: { id }, body, status }) => {
+		async ({ params: { id }, body, status, profile }) => {
+			const rules = defineAbilityFor(profile);
+
+			if (rules.cannot('update', 'Clinic', id)) {
+				return status(401, "Unauthorized");
+			}
+
 			const result = await db
+
 				.update(clinics)
 				.set(body)
 				.where(eq(clinics.id, id))
@@ -135,12 +167,18 @@ export const clinicsController = new Elysia({ prefix: '/clinics' })
 			params: t.Object({
 				id: t.String(),
 			}),
+			isSignedIn: true,
 			body: updateClinicDTO,
 		}
 	)
 	.delete(
 		'/:id',
-		async ({ params: { id }, status }) => {
+		async ({ params: { id }, status, profile }) => {
+			const rules = defineAbilityFor(profile);
+			if (rules.cannot('delete', 'Clinic', id)) {
+				return status(401, "Unauthorized");
+			}
+
 			const result = await db
 				.delete(clinics)
 				.where(eq(clinics.id, id))
@@ -154,6 +192,7 @@ export const clinicsController = new Elysia({ prefix: '/clinics' })
 
 		},
 		{
+			isSignedIn: true,
 			params: t.Object({
 				id: t.String(),
 			}),

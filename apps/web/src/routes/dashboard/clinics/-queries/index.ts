@@ -15,7 +15,7 @@ export function clinicsQuery(
 	return queryOptions({
 		queryKey: [queryKeys.LIST_CLINICS, page, limit, name, address],
 		queryFn: async () => {
-			const { data } = await client.clinics.get({
+			const { data, status } = await client.clinics.get({
 				query: { page, limit, name, address },
 			});
 			return data;
@@ -28,9 +28,9 @@ export function clinicById(id?: string) {
 		queryKey: [queryKeys.SHOW_CLINIC, id],
 		queryFn: id
 			? async () => {
-				const { data } = await client.clinics({ id }).get();
-				return data;
-			}
+					const { data } = await client.clinics({ id }).get();
+					return data;
+				}
 			: skipToken,
 	});
 }

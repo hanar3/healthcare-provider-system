@@ -1,5 +1,5 @@
 import { DataTable } from "@/components/data-table";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { beneficiariesQuery } from "@/routes/dashboard/organizations/$organizationId/-queries";
 import { Link } from "@tanstack/react-router";
 import type { ClinicsGet } from "@/api";
@@ -19,6 +19,7 @@ import { CreateClinicDialog } from "./create-clinic-dialog";
 import { DeleteClinicDialog } from "./delete-clinic";
 import { Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Can } from "@/context/casl-context";
 
 type Clinic = ClinicsGet["list"][0];
 
@@ -87,7 +88,9 @@ export const columns: ColumnDef<Clinic>[] = [
 							</Button>
 						}
 					/>
-					<DeleteClinicDialog id={info.row.original.id} />
+					<Can I="delete" a="Clinic">
+						<DeleteClinicDialog id={info.row.original.id} />
+					</Can>
 				</div>
 			);
 		},
@@ -98,7 +101,7 @@ export function ClinicsDataTable() {
 	const [pagination, setPagination] = usePaginationSearchParams();
 	const [isPending, startTransition] = useTransition();
 
-	const { data } = useSuspenseQuery(
+	const { data } = useQuery(
 		clinicsQuery(pagination.pageIndex, pagination.pageSize),
 	);
 

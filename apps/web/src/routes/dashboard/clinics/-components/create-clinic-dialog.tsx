@@ -30,6 +30,7 @@ import { skipToken, useMutation, useQuery } from "@tanstack/react-query";
 import client, { type ClinicCreate } from "@/api";
 import { clinicById, queryKeys } from "../-queries";
 import { useState } from "react";
+import { Can } from "@/context/casl-context";
 
 const schema = z.object({
 	name: z
@@ -108,10 +109,12 @@ export function CreateClinicDialog({
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger>
 				{!trigger ? (
-					<Button className="flex gap-2 items-center bg-primary text-white p-2 rounded-md cursor-pointer text-sm">
-						<Plus size="14px" className="text-sm" />
-						Adicionar Clínica
-					</Button>
+					<Can I="Create" a="Clinic">
+						<Button className="flex gap-2 items-center bg-primary text-white p-2 rounded-md cursor-pointer text-sm">
+							<Plus size="14px" className="text-sm" />
+							Adicionar Clínica
+						</Button>
+					</Can>
 				) : (
 					trigger
 				)}

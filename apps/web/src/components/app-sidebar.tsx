@@ -25,7 +25,7 @@ import { Button } from "./ui/button";
 import { authClient } from "@/lib/auth-client";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { profileQuery } from "@/queries/profille.query";
+import { profileQuery } from "@/queries/profile.query";
 
 const PREFIX = "/dashboard";
 const items = [
@@ -53,15 +53,13 @@ const items = [
 		href: PREFIX + "/beneficiaries",
 		abilities: ["read", "Beneficiary"],
 	},
-	{
-		title: "Configurações",
-		icon: Settings,
-		href: PREFIX + "/settings",
-		abilities: [],
-	},
 ];
 
-function SidebarLogOut(props: { name?: string; role?: string, isLoading: boolean }) {
+function SidebarLogOut(props: {
+	name?: string;
+	role?: string;
+	isLoading: boolean;
+}) {
 	const navigate = useNavigate();
 	async function handleLogout() {
 		await authClient.signOut();
@@ -70,41 +68,42 @@ function SidebarLogOut(props: { name?: string; role?: string, isLoading: boolean
 		});
 	}
 
-	return props.isLoading ?
-		(
-			<div className="flex items-center space-x-4">
-				<Skeleton className="h-12 w-12 rounded-full" />
-				<div className="space-y-2">
-					<Skeleton className="h-4 w-[150px]" />
-					<Skeleton className="h-4 w-[100px]" />
-				</div>
+	return props.isLoading ? (
+		<div className="flex items-center space-x-4">
+			<Skeleton className="h-12 w-12 rounded-full" />
+			<div className="space-y-2">
+				<Skeleton className="h-4 w-[150px]" />
+				<Skeleton className="h-4 w-[100px]" />
 			</div>
-		) : (
-			<div className="border-t border-border p-4">
-				<div className="flex items-center gap-3 rounded-lg  ">
-					<Avatar className="h-9 w-9">
-						<AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
-							SJ
-						</AvatarFallback>
-					</Avatar>
-					<div className="flex-1 min-w-0">
-						<p className="text-sm font-medium text-foreground truncate">
-							{props?.name ?? "Usuário desconhecido"}
-						</p>
-						<p className="text-xs text-muted-foreground truncate">{props.role ?? "Cargo desconhecido"}</p>
-					</div>
-					<Button
-						onClick={handleLogout}
-						variant="ghost"
-						size="icon"
-						className="h-8 w-8 text-muted-foreground hover:text-foreground"
-					>
-						<LogOut className="h-4 w-4" />
-						<span className="sr-only">Sair</span>
-					</Button>
+		</div>
+	) : (
+		<div className="border-t border-border p-4">
+			<div className="flex items-center gap-3 rounded-lg  ">
+				<Avatar className="h-9 w-9">
+					<AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
+						SJ
+					</AvatarFallback>
+				</Avatar>
+				<div className="flex-1 min-w-0">
+					<p className="text-sm font-medium text-foreground truncate">
+						{props?.name ?? "Usuário desconhecido"}
+					</p>
+					<p className="text-xs text-muted-foreground truncate">
+						{props.role ?? "Cargo desconhecido"}
+					</p>
 				</div>
+				<Button
+					onClick={handleLogout}
+					variant="ghost"
+					size="icon"
+					className="h-8 w-8 text-muted-foreground hover:text-foreground"
+				>
+					<LogOut className="h-4 w-4" />
+					<span className="sr-only">Sair</span>
+				</Button>
 			</div>
-		);
+		</div>
+	);
 }
 
 export function AppSidebar() {
@@ -151,7 +150,7 @@ export function AppSidebar() {
 				<SidebarGroup />
 			</SidebarContent>
 			<SidebarFooter>
-				<SidebarLogOut isLoading={isLoading} name={me?.name} role={me?.role} />
+				<SidebarLogOut isLoading={isLoading} name={me?.name} />
 			</SidebarFooter>
 		</Sidebar>
 	);

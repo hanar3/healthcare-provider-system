@@ -3,6 +3,8 @@ import { createContextualCan } from "@casl/react";
 import { createMongoAbility } from "@casl/ability";
 import { defineAbilityFor } from "@workspace/common/auth/ability";
 import client from "./api";
+import { useQuery } from "@tanstack/react-query";
+import { profileQuery } from "@/queries/profile.query";
 
 export const AbilityContext = createContext(createMongoAbility());
 export const Can = createContextualCan(AbilityContext.Consumer);
@@ -12,12 +14,7 @@ export const AbilityProvider = ({
 }: {
 	children: React.ReactNode;
 }) => {
-	const userPayload = {
-		id: 1,
-		isSuperAdmin: false,
-		orgAccessIds: [10],
-		clinicAccessIds: [10],
-	};
+	const { data: userPayload } = useQuery(profileQuery);
 
 	const ability = defineAbilityFor(userPayload);
 
