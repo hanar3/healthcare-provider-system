@@ -14,3 +14,13 @@ export function beneficiaryById(id: string) {
 		},
 	});
 }
+
+export function adminStatsQuery() {
+	return queryOptions({
+		queryKey: ["admin-stats"],
+		queryFn: async () => {
+			const { data } = await client.stats["admin-summary"].get();
+			return data;
+		},
+	});
+}

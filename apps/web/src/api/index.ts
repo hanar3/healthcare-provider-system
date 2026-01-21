@@ -4,8 +4,8 @@ import type { App } from "../../../api/src/index";
 
 const client = treaty<App>("localhost:3001", {
 	fetch: {
-		credentials: "include"
-	}
+		credentials: "include",
+	},
 });
 
 export type OrganizationsGet = Treaty.Data<typeof client.organizations.get>;
@@ -21,6 +21,8 @@ export type ClinicCreate = Parameters<typeof client.clinics.post>[0];
 export type BeneficiaryCreate = Parameters<typeof client.beneficiaries.post>[0];
 export type DoctorsGet = Treaty.Data<typeof client.doctors.get>;
 export type DoctorCreate = Parameters<typeof client.doctors.post>[0];
-
+export type StatsResponse = Treaty.Data<
+	(typeof client.stats)["admin-summary"]["get"]
+>;
 
 export default client;

@@ -31,9 +31,9 @@ export const specialties = pgTable('doctor_specialties', {
 export const organizations = pgTable('organizations', {
 	id: uuid('id').primaryKey().defaultRandom(),
 	name: text('name').notNull(),
-	status: paymentStatus('status').default('active'), 
-	plan: plan('plan').default('silver'), 
-	govId: text('gov_id'), 
+	status: paymentStatus('status').default('active'),
+	plan: plan('plan').default('silver'),
+	govId: text('gov_id'),
 	createdAt: timestamp('created_at').defaultNow(),
 	updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()).notNull(),
 });
@@ -51,9 +51,9 @@ export const profile = pgTable("profile", {
 	id: uuid("id").primaryKey().defaultRandom().notNull(),
 	name: text("name").notNull(),
 	email: text("email").notNull().unique(),
-	status: paymentStatus('status').default('active'), 
+	status: paymentStatus('status').default('active'),
 	govId: text('gov_id'),
-	plan: plan('plan').default('silver'), 
+	plan: plan('plan').default('silver'),
 	role: profileRole('role'),
 	userId: text("user_id")
 		.references(() => user.id, { onDelete: "cascade" }),
@@ -166,7 +166,7 @@ export const profileOrganizationAccess = pgTable('profile_organization_access', 
 
 export const profileClinicAccess = pgTable('profile_clinic_access', {
 	profileId: uuid('profile_id').references(() => profile.id, { onDelete: 'cascade' }).notNull(),
-	clinicId: uuid('clinic_id').references(() => clinics.id).notNull(),
+	clinicId: uuid('clinic_id').references(() => clinics.id, { onDelete: 'cascade' }).notNull(),
 }, (t) => ([{
 	pk: primaryKey({ columns: [t.profileId, t.clinicId] }),
 }]));

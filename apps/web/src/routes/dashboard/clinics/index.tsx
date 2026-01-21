@@ -1,11 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { clinicsQuery } from "./-queries";
 import { ClinicsDataTable } from "./-components/data-table";
 import { Suspense } from "react";
 import { CreateClinicDialog } from "./-components/create-clinic-dialog";
-import { getSession, getSessionFromCtx } from "better-auth/api";
-import { authClient } from "@/lib/auth-client";
-// import { CreateOrganizationDialog } from "./-components/create-organization-dialog";
 
 type Search = {
 	page: number;

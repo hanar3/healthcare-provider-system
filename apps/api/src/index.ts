@@ -8,6 +8,7 @@ import { clinicsController } from './modules/clinics';
 import { doctorsController } from './modules/doctors';
 import { specialtiesController } from './modules/specialties';
 import { profileController } from './modules/profile';
+import { statsController } from './modules/stats';
 
 
 const betterAuthView = (context: Context) => {
@@ -44,6 +45,7 @@ const app = new Elysia()
 	.use(doctorsController)
 	.use(specialtiesController)
 	.use(profileController)
+	.use(statsController)
 	.get('/', () => 'Health Provider API Active')
 	.get('/health', () => ({ status: 'ok', timestamp: new Date() }))
 	.all("/api/auth/*", betterAuthView)

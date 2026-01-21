@@ -179,16 +179,22 @@ export const clinicsController = new Elysia({ prefix: '/clinics' })
 				return status(401, "Unauthorized");
 			}
 
-			const result = await db
-				.delete(clinics)
-				.where(eq(clinics.id, id))
-				.returning();
+			try {
+				const result = await db
+					.delete(clinics)
+					.where(eq(clinics.id, id))
+					.returning();
+				if (result.length === 0) {
+					return status(404, 'Clinic not found');
+				}
 
-			if (result.length === 0) {
-				return status(404, 'Clinic not found');
+				return { success: true, deletedId: result[0]!.id };
+			} catch (err) {
+				console.error(err)
 			}
 
-			return { success: true, deletedId: result[0]!.id };
+
+
 
 		},
 		{
