@@ -6,7 +6,8 @@ import {
 	desc,
 	eq,
 	ilike,
-	sql
+	inArray,
+	sql,
 } from 'drizzle-orm';
 import { db } from '../db';
 import { profile, profileClinicAccess, profileSpecialties, specialties } from '../db/schema';
@@ -207,17 +208,41 @@ export const doctorsController = new Elysia({ prefix: '/doctors' })
 				.where(eq(profile.id, id))
 				.returning();
 
-			if (body.specialties) { // TODO: this is BAD. we shouldn't do this.
-				await db.delete(profileSpecialties).where(eq(profileSpecialties.profileId, id)); // remove all specialties for that profile
-				// insert new ones
-				await db.insert(profileSpecialties).values(
-					body.specialties.map(s => {
-						return {
-							profileId: id,
-							specialtyId: s
-						}
-					})
-				)
+			// Thanks gemini
+			if (Array.isArray(body.specialties)) {
+				await db.transaction(async (tx) => {
+					const currentSpecialties = await tx
+						.select({ specialtyId: profileSpecialties.specialtyId })
+						.from(profileSpecialties)
+						.where(eq(profileSpecialties.profileId, id));
+
+					const currentSet = new Set(currentSpecialties.map((s) => s.specialtyId));
+					const newSet = new Set(body.specialties);
+
+					const toInsert = body.specialties!.filter((sId) => !currentSet.has(sId));
+
+					const toDelete = [...currentSet].filter((sId) => !newSet.has(sId));
+
+					if (toInsert.length > 0) {
+						await tx.insert(profileSpecialties).values(
+							toInsert.map((sId) => ({
+								profileId: id,
+								specialtyId: sId,
+							}))
+						);
+					}
+
+					if (toDelete.length > 0) {
+						await tx
+							.delete(profileSpecialties)
+							.where(
+								and(
+									eq(profileSpecialties.profileId, id),
+									inArray(profileSpecialties.specialtyId, toDelete)
+								)
+							);
+					}
+				});
 			}
 
 			if (result.length === 0) {
