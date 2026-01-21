@@ -1,10 +1,13 @@
 import { Elysia, t } from 'elysia';
 import {
 	and,
-	count, desc, eq, ilike, or } from 'drizzle-orm';
+	count, desc, eq, ilike, or
+} from 'drizzle-orm';
 import { db } from '../db';
 import { profile, profileOrganizationAccess } from '../db/schema';
 import { decrypt, encrypt } from '../lib/crypto';
+import { authPlugin } from '../plugins/authPlugin';
+import { withUserContext } from '../lib/withUserContext';
 
 const createBeneficiaryDTO = t.Object({
 	name: t.String(),
@@ -33,9 +36,10 @@ const beneficiaryBaseSelect = {
 }
 
 export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
+	.use(authPlugin)
 	.get('/', async ({ query: { page, limit, ...f } }) => {
 
-		
+
 		const baseQuery = db.select({ ...beneficiaryBaseSelect }).from(profile).leftJoin(profileOrganizationAccess, eq(profile.id, profileOrganizationAccess.profileId));
 
 		const filters = [...beneficiaryListBaseFilters];
@@ -47,11 +51,11 @@ export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
 		}
 
 		if (f.name) filters.push(ilike(profile.name, `%${f.name}%`));
-		
- 
+
+
 		const rows = await baseQuery.where(and(...filters)).limit(limit).offset(limit * page).orderBy(desc(profile.createdAt));;
 		const [total] = await db.select({ count: count() }).from(profile).leftJoin(profileOrganizationAccess, eq(profile.id, profileOrganizationAccess.profileId)).where(and(...filters));
-	
+
 
 
 		const list = await Promise.all(rows.map(async profile => {
@@ -152,18 +156,20 @@ export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
 
 	.patch(
 		'/:id',
-		async ({ params: { id }, body, status }) => {
+		async ({ params: { id }, body, status, user }) => {
 			const payload = { ...body };
 			if (payload.govId) {
 				const encryptedGovId = await encrypt(payload.govId);
 				payload.govId = `${encryptedGovId.iv}:${encryptedGovId.data}`;
 			}
 
-			const result = await db
-				.update(profile)
-				.set(body)
-				.where(eq(profile.id, id))
-				.returning();
+			const result = await withUserContext(user.id, async (tx) => {
+				return await tx
+					.update(profile)
+					.set(body)
+					.where(eq(profile.id, id))
+					.returning()
+			});
 
 			if (result.length === 0) {
 				return status(404, 'profile not found');
@@ -172,6 +178,7 @@ export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
 			return result[0];
 		},
 		{
+			isSignedIn: true,
 			params: t.Object({
 				id: t.String(),
 			}),

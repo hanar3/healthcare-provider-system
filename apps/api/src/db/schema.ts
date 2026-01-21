@@ -1,6 +1,5 @@
-import { pgTable, text, boolean, timestamp, primaryKey, integer, index, uuid, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, text, boolean, timestamp, primaryKey, integer, index, uuid, pgEnum, jsonb } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
-
 export const profileRole = pgEnum('profile_role_enum', [
 	'beneficiary',
 	'organization_admin',
@@ -195,3 +194,14 @@ export const profileClinicRelations = relations(profileClinicAccess, ({ one }) =
 	profile: one(profile, { fields: [profileClinicAccess.profileId], references: [profile.id] }),
 	clinic: one(clinics, { fields: [profileClinicAccess.clinicId], references: [clinics.id] }),
 }));
+
+export const auditLogs = pgTable('audit_logs', {
+	id: uuid('id').defaultRandom(),
+	tableName: text('table_name').notNull(),
+	recordId: text('record_id').notNull(),
+	operation: text('operation').notNull(), // 'UPDATE', 'DELETE'
+	oldValues: jsonb('old_values'),
+	newValues: jsonb('new_values'),
+	changedAt: timestamp('changed_at').defaultNow(),
+	changedBy: text('changed_by').references(() => user.id).notNull()
+});

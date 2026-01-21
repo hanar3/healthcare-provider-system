@@ -31,6 +31,7 @@ import client, { type BeneficiaryCreate } from "@/api";
 import { queryKeys } from "../-queries";
 import { beneficiaryById } from "../../../-queries";
 import { useState } from "react";
+import { deepDiff } from "@/lib/deep-diff";
 
 const schema = z.object({
 	name: z.string(),
@@ -45,8 +46,18 @@ export function EditBenefciaryDialog({ id }: { id: string }) {
 	const { data, refetch } = useQuery(beneficiaryById(id));
 
 	const { mutateAsync: editBeneficiary } = useMutation({
-		mutationFn: async (payload: Partial<BeneficiaryCreate>) => {
-			await client.beneficiaries({ id }).patch({ ...payload });
+		mutationFn: async (payload: BeneficiaryCreate) => {
+			if (!data) return;
+			const p = deepDiff(
+				{
+					name: data?.name ?? "",
+					email: data?.email ?? "",
+					plan: data?.plan ?? "silver",
+					govId: data?.govId ?? "",
+				},
+				payload,
+			);
+			await client.beneficiaries({ id }).patch(p);
 		},
 		onSuccess: (_data, _variables, _onMutateResult, context) => {
 			context.client.invalidateQueries({
