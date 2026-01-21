@@ -19,10 +19,13 @@ import {
 	Stethoscope,
 	Users,
 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "./ui/button";
 import { authClient } from "@/lib/auth-client";
 import { useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { profileQuery } from "@/queries/profille.query";
 
 const PREFIX = "/dashboard";
 const items = [
@@ -58,7 +61,7 @@ const items = [
 	},
 ];
 
-function SidebarLogOut(props: { name: string; role: string }) {
+function SidebarLogOut(props: { name?: string; role?: string, isLoading: boolean }) {
 	const navigate = useNavigate();
 	async function handleLogout() {
 		await authClient.signOut();
@@ -66,35 +69,47 @@ function SidebarLogOut(props: { name: string; role: string }) {
 			to: "/",
 		});
 	}
-	return (
-		<div className="border-t border-border p-4">
-			<div className="flex items-center gap-3 rounded-lg  ">
-				<Avatar className="h-9 w-9">
-					<AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
-						SJ
-					</AvatarFallback>
-				</Avatar>
-				<div className="flex-1 min-w-0">
-					<p className="text-sm font-medium text-foreground truncate">
-						{props.name}
-					</p>
-					<p className="text-xs text-muted-foreground truncate">{props.role}</p>
+
+	return props.isLoading ?
+		(
+			<div className="flex items-center space-x-4">
+				<Skeleton className="h-12 w-12 rounded-full" />
+				<div className="space-y-2">
+					<Skeleton className="h-4 w-[150px]" />
+					<Skeleton className="h-4 w-[100px]" />
 				</div>
-				<Button
-					onClick={handleLogout}
-					variant="ghost"
-					size="icon"
-					className="h-8 w-8 text-muted-foreground hover:text-foreground"
-				>
-					<LogOut className="h-4 w-4" />
-					<span className="sr-only">Sair</span>
-				</Button>
 			</div>
-		</div>
-	);
+		) : (
+			<div className="border-t border-border p-4">
+				<div className="flex items-center gap-3 rounded-lg  ">
+					<Avatar className="h-9 w-9">
+						<AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
+							SJ
+						</AvatarFallback>
+					</Avatar>
+					<div className="flex-1 min-w-0">
+						<p className="text-sm font-medium text-foreground truncate">
+							{props?.name ?? "Usuário desconhecido"}
+						</p>
+						<p className="text-xs text-muted-foreground truncate">{props.role ?? "Cargo desconhecido"}</p>
+					</div>
+					<Button
+						onClick={handleLogout}
+						variant="ghost"
+						size="icon"
+						className="h-8 w-8 text-muted-foreground hover:text-foreground"
+					>
+						<LogOut className="h-4 w-4" />
+						<span className="sr-only">Sair</span>
+					</Button>
+				</div>
+			</div>
+		);
 }
 
 export function AppSidebar() {
+	const { data: me, isLoading } = useQuery(profileQuery);
+
 	return (
 		<Sidebar>
 			<SidebarHeader className="border-b p-2">
@@ -136,7 +151,7 @@ export function AppSidebar() {
 				<SidebarGroup />
 			</SidebarContent>
 			<SidebarFooter>
-				<SidebarLogOut name="Dr. Sarah Johnson" role="Administrator" />
+				<SidebarLogOut isLoading={isLoading} name={me?.name} role={me?.role} />
 			</SidebarFooter>
 		</Sidebar>
 	);

@@ -8,6 +8,8 @@ export type AppAbility = MongoAbility<[Actions, Subjects]>;
 
 interface UserPayload {
 	id: number;
+	name: string;
+	email: string;
 	role: UserRole;
 	orgAccessIds: number[];    // Array of Org IDs user can access
 	clinicAccessIds: number[]; // Array of Clinic IDs user can access

@@ -2,15 +2,16 @@
 import { Elysia, t } from 'elysia';
 import {
 	and,
-	count, 
-	desc, 
-	eq, 
-	ilike, 
-	sql 
+	count,
+	desc,
+	eq,
+	ilike,
+	sql
 } from 'drizzle-orm';
 import { db } from '../db';
 import { profile, profileClinicAccess, profileSpecialties, specialties } from '../db/schema';
 import { decrypt, encrypt } from '../lib/crypto';
+import { emailExists } from '../plugins/emailExistsPlugin';
 
 const createDoctorDTO = t.Object({
 	name: t.String(),
@@ -51,9 +52,8 @@ const doctorBaseSelect = {
 }
 
 export const doctorsController = new Elysia({ prefix: '/doctors' })
+	.use(emailExists)
 	.get('/', async ({ query: { page, limit, ...f } }) => {
-
-		
 		const baseQuery = db.select({ ...doctorBaseSelect })
 			.from(profile)
 			.leftJoin(profileClinicAccess, eq(profile.id, profileClinicAccess.profileId))
@@ -70,11 +70,11 @@ export const doctorsController = new Elysia({ prefix: '/doctors' })
 		}
 
 		if (f.name) filters.push(ilike(profile.name, `%${f.name}%`));
-		
- 
+
+
 		const rows = await baseQuery.where(and(...filters)).limit(limit).offset(limit * page).orderBy(desc(profile.createdAt));;
 		const [total] = await db.select({ count: count() }).from(profile).leftJoin(profileClinicAccess, eq(profile.id, profileClinicAccess.profileId)).where(and(...filters));
-	
+
 
 
 		const list = await Promise.all(rows.map(async profile => {
@@ -111,7 +111,13 @@ export const doctorsController = new Elysia({ prefix: '/doctors' })
 	.get(
 		'/:id',
 		async ({ params: { id }, status }) => {
-			const result = await db.select({ ...doctorBaseSelect }).from(profile).leftJoin(profileClinicAccess, eq(profile.id, profileClinicAccess.profileId)).where(eq(profile.id, id));
+			const result = await db.select({ ...doctorBaseSelect })
+				.from(profile)
+				.leftJoin(profileClinicAccess, eq(profile.id, profileClinicAccess.profileId))
+				.leftJoin(profileSpecialties, eq(profile.id, profileSpecialties.profileId))
+				.leftJoin(specialties, eq(profileSpecialties.specialtyId, specialties.id))
+				.where(eq(profile.id, id))
+				.groupBy(profile.id, profileClinicAccess.clinicId);
 
 
 			if (result.length === 0) {
@@ -139,7 +145,7 @@ export const doctorsController = new Elysia({ prefix: '/doctors' })
 
 	.post(
 		'/',
-		async ({ body }) => {
+		async ({ body, status }) => {
 
 			const payload = {
 				...body
@@ -154,7 +160,6 @@ export const doctorsController = new Elysia({ prefix: '/doctors' })
 				const [p] = await db.insert(profile).values({
 					email: body.email,
 					name: body.name,
-					plan: body.plan,
 					govId: payload.govId,
 					role: "doctor"
 				}).returning();
@@ -172,6 +177,7 @@ export const doctorsController = new Elysia({ prefix: '/doctors' })
 			return result;
 		},
 		{
+			conflictIfEmailExists: true,
 			body: createDoctorDTO,
 		}
 	)
