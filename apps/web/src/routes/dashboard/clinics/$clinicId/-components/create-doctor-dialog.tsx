@@ -204,7 +204,7 @@ export function CreateDoctorDialog({
 									field.state.meta.isTouched && !field.state.meta.isValid;
 								return (
 									<Field data-invalid={isInvalid}>
-										<FieldLabel htmlFor={field.name}>CNPJ</FieldLabel>
+										<FieldLabel htmlFor={field.name}>CRM</FieldLabel>
 										<Input
 											id={field.name}
 											name={field.name}
@@ -230,9 +230,9 @@ export function CreateDoctorDialog({
 									field.state.meta.isTouched && !field.state.meta.isValid;
 								return (
 									<Field data-invalid={isInvalid}>
-										<FieldLabel htmlFor={field.name}>CNPJ</FieldLabel>
+										<FieldLabel htmlFor={field.name}>Especialidades</FieldLabel>
 										<SelectPills
-											placeholder=""
+											placeholder="Selecione as especialidades"
 											data={
 												specialties?.map((s) => ({
 													value: s.id,

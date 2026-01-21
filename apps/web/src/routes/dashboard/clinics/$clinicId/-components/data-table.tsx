@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { CreateDoctorDialog } from "./create-doctor-dialog";
 import { Button } from "@/components/ui/button";
 import { Edit } from "lucide-react";
+import { DeleteDoctorDialog } from "./delete-doctor-dialog";
 
 type Doctor = DoctorsGet["list"][0];
 
@@ -82,6 +83,7 @@ export const columns: ColumnDef<Doctor>[] = [
 							</Button>
 						}
 					/>
+					<DeleteDoctorDialog id={info.row.original.id} />
 				</div>
 			);
 		},

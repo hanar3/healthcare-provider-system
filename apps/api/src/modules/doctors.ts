@@ -146,7 +146,6 @@ export const doctorsController = new Elysia({ prefix: '/doctors' })
 	.post(
 		'/',
 		async ({ body, status }) => {
-
 			const payload = {
 				...body
 			};
@@ -163,6 +162,17 @@ export const doctorsController = new Elysia({ prefix: '/doctors' })
 					govId: payload.govId,
 					role: "doctor"
 				}).returning();
+
+				if (body.specialties && p) {
+					await db.insert(profileSpecialties).values(
+						body.specialties.map(s => {
+							return {
+								profileId: p.id,
+								specialtyId: s
+							}
+						})
+					)
+				}
 
 				if (body.clinicId && p) {
 					await db.insert(profileClinicAccess).values({
@@ -196,6 +206,19 @@ export const doctorsController = new Elysia({ prefix: '/doctors' })
 				.set(body)
 				.where(eq(profile.id, id))
 				.returning();
+
+			if (body.specialties) { // TODO: this is BAD. we shouldn't do this.
+				await db.delete(profileSpecialties).where(eq(profileSpecialties.profileId, id)); // remove all specialties for that profile
+				// insert new ones
+				await db.insert(profileSpecialties).values(
+					body.specialties.map(s => {
+						return {
+							profileId: id,
+							specialtyId: s
+						}
+					})
+				)
+			}
 
 			if (result.length === 0) {
 				return status(404, 'profile not found');
