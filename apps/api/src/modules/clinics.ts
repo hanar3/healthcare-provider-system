@@ -37,11 +37,7 @@ export const clinicsController = new Elysia({ prefix: '/clinics' })
 			payload.govId = `${iv}:${data}`;
 		}
 
-		await db.insert(clinics).values({
-			name: body.name,
-			address: body.address,
-			govId: body.govId,
-		});
+		await db.insert(clinics).values(payload);
 	}, {
 		isSignedIn: true,
 		body: t.Object({
