@@ -1,8 +1,7 @@
 import { DataTable } from "@/components/data-table";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { beneficiariesQuery } from "@/routes/dashboard/organizations/$organizationId/-queries";
+import { useQuery } from "@tanstack/react-query";
 
-import type { DoctorsGet, OrganizationsGet } from "@/api";
+import type { DoctorsGet } from "@/api";
 import type {
 	ColumnDef,
 	PaginationState,
@@ -97,7 +96,7 @@ export function DoctorsDataTable() {
 	const [pagination, setPagination] = usePaginationSearchParams();
 	const [isPending, startTransition] = useTransition();
 
-	const { data } = useSuspenseQuery(
+	const { data } = useQuery(
 		doctorsQuery(pagination.pageIndex, pagination.pageSize, clinicId),
 	);
 

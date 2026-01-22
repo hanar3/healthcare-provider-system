@@ -1,15 +1,7 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { Suspense } from "react";
-import { DoctorCard } from "./-components/doctor-card.tsx";
-import { doctorsQuery } from "./-queries";
-import {
-	useQuery,
-	useSuspenseInfiniteQuery,
-	useSuspenseQuery,
-} from "@tanstack/react-query";
-import { usePaginationSearchParams } from "@/hooks/use-pagination-searchparams.ts";
-import { Treaty } from "@elysiajs/eden";
-import client from "@/api/index.ts";
+import { useQuery } from "@tanstack/react-query";
+
 import { DoctorsDataTable } from "./-components/data-table.tsx";
 import { clinicById } from "../-queries/index.ts";
 import { Badge } from "@/components/ui/badge.tsx";
@@ -27,12 +19,6 @@ export const Route = createFileRoute("/dashboard/clinics/$clinicId/")({
 			page: Number(search?.page ?? 1),
 			perPage: Number(search?.perpage ?? 10),
 		} as Search;
-	},
-	loader: async ({ context, location, params }) => {
-		const search: Search = location.search as Search;
-		return context.queryClient.ensureQueryData(
-			doctorsQuery(search.page, search.perPage, params.clinicId),
-		);
 	},
 });
 

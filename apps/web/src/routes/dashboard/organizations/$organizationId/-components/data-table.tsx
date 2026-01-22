@@ -1,5 +1,5 @@
 import { DataTable } from "@/components/data-table";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { beneficiariesQuery } from "@/routes/dashboard/organizations/$organizationId/-queries";
 import type { OrganizationsGet } from "@/api";
 import type {
@@ -18,7 +18,6 @@ import { cn } from "@/lib/utils";
 import { useParams } from "@tanstack/react-router";
 import { DeleteBeneficiaryDialog } from "./delete-beneficiary";
 import { EditBenefciaryDialog } from "./edit-beneficiary";
-import { Can } from "@/context/casl-context";
 
 type Organization = OrganizationsGet["list"][0];
 
@@ -118,7 +117,7 @@ export function BeneficiariesDataTable() {
 	const [pagination, setPagination] = usePaginationSearchParams();
 	const [isPending, startTransition] = useTransition();
 
-	const { data } = useSuspenseQuery(
+	const { data } = useQuery(
 		beneficiariesQuery(
 			pagination.pageIndex,
 			pagination.pageSize,

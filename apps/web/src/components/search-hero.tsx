@@ -27,7 +27,7 @@ export function SearchHero() {
 					<h1 className="text-4xl md:text-5xl font-bold text-center text-slate-800 text-balance bg-gradient-to-r from-teal-700 to-teal-500 bg-clip-text text-transparent">
 						Encontre o cuidado certo, agora mesmo.
 					</h1>
-					<span className="mt-3 max-w-xl text-base text-slate-600">
+					<span className="mt-3 max-w-xl text-base text-slate-600 ">
 						Encontre médicos e clínicas credenciadas próximos a você em segundos
 					</span>
 				</div>

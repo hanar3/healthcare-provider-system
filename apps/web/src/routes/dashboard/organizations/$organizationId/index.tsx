@@ -24,12 +24,6 @@ export const Route = createFileRoute(
 			perPage: Number(search?.perpage ?? 10),
 		} as BeneficiarySearch;
 	},
-	loader: async ({ context, location, params }) => {
-		const search: BeneficiarySearch = location.search as BeneficiarySearch;
-		return context.queryClient.ensureQueryData(
-			beneficiariesQuery(search.page, search.perPage, params.organizationId),
-		);
-	},
 });
 
 function RouteComponent() {
