@@ -21,11 +21,16 @@ const specialties = [
 
 export function SearchHero() {
 	return (
-		<section className="bg-gradient-to-b from-slate-50 to-white py-16 md:py-24">
-			<div className="container mx-auto px-4">
-				<h1 className="text-4xl md:text-5xl font-bold text-center text-slate-800 mb-8 text-balance">
-					Find the right care, right now.
-				</h1>
+		<section className="flex flex-col h-screen bg-[url(/search-bg.jpg)] bg-no-repeat bg-cover items-center justify-center bg-center">
+			<div className="container px-4">
+				<div className="flex flex-col items-center justify-center mb-8">
+					<h1 className="text-4xl md:text-5xl font-bold text-center text-slate-800 text-balance bg-gradient-to-r from-teal-700 to-teal-500 bg-clip-text text-transparent">
+						Encontre o cuidado certo, agora mesmo.
+					</h1>
+					<span className="mt-3 max-w-xl text-base text-slate-600">
+						Encontre médicos e clínicas credenciadas próximos a você em segundos
+					</span>
+				</div>
 
 				<Card className="max-w-4xl mx-auto shadow-lg">
 					<CardContent className="p-4 md:p-6">
@@ -76,7 +81,7 @@ export function SearchHero() {
 								size="lg"
 								className="h-12 px-8 bg-primary text-white w-full md:w-auto"
 							>
-								Search
+								Buscar
 							</Button>
 						</div>
 					</CardContent>
