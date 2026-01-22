@@ -5,6 +5,7 @@ import { organizations } from '../db/schema';
 import { decrypt, encrypt } from '../lib/crypto';
 import { authPlugin } from '../plugins/authPlugin';
 import { defineAbilityFor } from '@workspace/common/auth/ability';
+import { withUserContext } from '../lib/withUserContext';
 
 const createOrgDTO = t.Object({
 	name: t.String(),
@@ -114,7 +115,7 @@ export const organizationsController = new Elysia({ prefix: '/organizations' })
 
 	.post(
 		'/',
-		async ({ body }) => {
+		async ({ body, user }) => {
 
 			const payload = {
 				...body
@@ -124,22 +125,27 @@ export const organizationsController = new Elysia({ prefix: '/organizations' })
 				payload.govId = `${encryptedGovId.iv}:${encryptedGovId.data}`;
 			}
 
-			const result = await db.insert(organizations).values(payload).returning();
+			const result = await withUserContext(user.id, async (tx) => {
+				return tx.insert(organizations).values(payload).returning();
+			})
 			return result[0];
 		},
 		{
+			isSignedIn: true,
 			body: createOrgDTO,
 		}
 	)
 
 	.patch(
 		'/:id',
-		async ({ params: { id }, body, status }) => {
-			const result = await db
-				.update(organizations)
-				.set(body)
-				.where(eq(organizations.id, id))
-				.returning();
+		async ({ params: { id }, body, status, user }) => {
+			const result = await withUserContext(user.id, async tx => {
+				return tx
+					.update(organizations)
+					.set(body)
+					.where(eq(organizations.id, id))
+					.returning()
+			});
 
 			if (result.length === 0) {
 				return status(404, 'Organization not found');
@@ -148,6 +154,7 @@ export const organizationsController = new Elysia({ prefix: '/organizations' })
 			return result[0];
 		},
 		{
+			isSignedIn: true,
 			params: t.Object({
 				id: t.String(),
 			}),
@@ -157,25 +164,23 @@ export const organizationsController = new Elysia({ prefix: '/organizations' })
 
 	.delete(
 		'/:id',
-		async ({ params: { id }, status }) => {
-			try {
-				const result = await db
+		async ({ params: { id }, status, user }) => {
+			const result = await withUserContext(user.id, async tx => {
+				return tx
 					.delete(organizations)
 					.where(eq(organizations.id, id))
-					.returning();
+					.returning()
+			});
 
-				if (result.length === 0) {
-					return status(404, 'Organization not found');
-				}
-
-				return { success: true, deletedId: result[0]!.id };
-			} catch (err) {
-				console.error(err);
-				return status(500);
+			if (result.length === 0) {
+				return status(404, 'Organization not found');
 			}
+
+			return { success: true, deletedId: result[0]!.id };
 
 		},
 		{
+			isSignedIn: true,
 			params: t.Object({
 				id: t.String(),
 			}),

@@ -13,6 +13,8 @@ import { db } from '../db';
 import { profile, profileClinicAccess, profileSpecialties, specialties } from '../db/schema';
 import { decrypt, encrypt } from '../lib/crypto';
 import { emailExists } from '../plugins/emailExistsPlugin';
+import { withUserContext } from '../lib/withUserContext';
+import { authPlugin } from '../plugins/authPlugin';
 
 const createDoctorDTO = t.Object({
 	name: t.String(),
@@ -54,6 +56,7 @@ const doctorBaseSelect = {
 
 export const doctorsController = new Elysia({ prefix: '/doctors' })
 	.use(emailExists)
+	.use(authPlugin)
 	.get('/', async ({ query: { page, limit, ...f } }) => {
 		const baseQuery = db.select({ ...doctorBaseSelect })
 			.from(profile)
@@ -156,8 +159,8 @@ export const doctorsController = new Elysia({ prefix: '/doctors' })
 				payload.govId = `${encryptedGovId.iv}:${encryptedGovId.data}`;
 			}
 
-			const result = await db.transaction(async () => {
-				const [p] = await db.insert(profile).values({
+			const result = await withUserContext(user.id, async (tx) => {
+				const [p] = await tx.insert(profile).values({
 					email: body.email,
 					name: body.name,
 					govId: payload.govId,
@@ -176,7 +179,7 @@ export const doctorsController = new Elysia({ prefix: '/doctors' })
 				}
 
 				if (body.clinicId && p) {
-					await db.insert(profileClinicAccess).values({
+					await tx.insert(profileClinicAccess).values({
 						profileId: p?.id,
 						clinicId: body.clinicId,
 					})
@@ -188,6 +191,7 @@ export const doctorsController = new Elysia({ prefix: '/doctors' })
 			return result;
 		},
 		{
+			isSignedIn: true,
 			conflictIfEmailExists: true,
 			body: createDoctorDTO,
 		}
@@ -195,22 +199,23 @@ export const doctorsController = new Elysia({ prefix: '/doctors' })
 
 	.patch(
 		'/:id',
-		async ({ params: { id }, body, status }) => {
+		async ({ params: { id }, body, status, user }) => {
 			const payload = { ...body };
 			if (payload.govId) {
 				const encryptedGovId = await encrypt(payload.govId);
 				payload.govId = `${encryptedGovId.iv}:${encryptedGovId.data}`;
 			}
 
-			const result = await db
-				.update(profile)
-				.set(body)
-				.where(eq(profile.id, id))
-				.returning();
 
-			// Thanks gemini
-			if (Array.isArray(body.specialties)) {
-				await db.transaction(async (tx) => {
+			const result = await withUserContext(user.id, async tx => {
+				const r = await tx
+					.update(profile)
+					.set(body)
+					.where(eq(profile.id, id))
+					.returning();
+
+				// Thanks gemini
+				if (Array.isArray(body.specialties)) {
 					const currentSpecialties = await tx
 						.select({ specialtyId: profileSpecialties.specialtyId })
 						.from(profileSpecialties)
@@ -242,8 +247,10 @@ export const doctorsController = new Elysia({ prefix: '/doctors' })
 								)
 							);
 					}
-				});
-			}
+				}
+
+				return r;
+			});
 
 			if (result.length === 0) {
 				return status(404, 'profile not found');
@@ -252,6 +259,7 @@ export const doctorsController = new Elysia({ prefix: '/doctors' })
 			return result[0];
 		},
 		{
+			isSignedIn: true,
 			params: t.Object({
 				id: t.String(),
 			}),
@@ -261,11 +269,13 @@ export const doctorsController = new Elysia({ prefix: '/doctors' })
 
 	.delete(
 		'/:id',
-		async ({ params: { id }, status }) => {
-			const result = await db
-				.delete(profile)
-				.where(eq(profile.id, id))
-				.returning();
+		async ({ params: { id }, status, user }) => {
+			const result = await withUserContext(user.id, async tx => {
+				return tx
+					.delete(profile)
+					.where(eq(profile.id, id))
+					.returning();
+			});
 
 			if (result.length === 0) {
 				return status(404, 'profile not found');
@@ -274,6 +284,7 @@ export const doctorsController = new Elysia({ prefix: '/doctors' })
 			return { success: true, deletedId: result[0]!.id };
 		},
 		{
+			isSignedIn: true,
 			params: t.Object({
 				id: t.String(),
 			}),

@@ -14,6 +14,7 @@ import {
 } from 'drizzle-orm';
 import { authPlugin } from '../plugins/authPlugin';
 import { defineAbilityFor } from "@workspace/common/auth/ability";
+import { withUserContext } from '../lib/withUserContext';
 
 const createClinicDTO = t.Object({
 	name: t.String(),
@@ -25,7 +26,7 @@ const updateClinicDTO = t.Partial(createClinicDTO);
 
 export const clinicsController = new Elysia({ prefix: '/clinics' })
 	.use(authPlugin)
-	.post('/', async ({ body, profile, status }) => {
+	.post('/', async ({ body, profile, user, status }) => {
 		const payload = { ...body };
 		const rules = defineAbilityFor(profile);
 		if (rules.cannot('create', 'Clinic')) {
@@ -37,7 +38,11 @@ export const clinicsController = new Elysia({ prefix: '/clinics' })
 			payload.govId = `${iv}:${data}`;
 		}
 
-		await db.insert(clinics).values(payload);
+		await withUserContext(user.id, async tx => {
+			tx.insert(clinics).values(payload);
+		});
+
+		return status(201, "Created");
 	}, {
 		isSignedIn: true,
 		body: t.Object({
@@ -139,19 +144,20 @@ export const clinicsController = new Elysia({ prefix: '/clinics' })
 	)
 	.patch(
 		'/:id',
-		async ({ params: { id }, body, status, profile }) => {
+		async ({ params: { id }, body, status, profile, user }) => {
 			const rules = defineAbilityFor(profile);
 
 			if (rules.cannot('update', 'Clinic', id)) {
 				return status(401, "Unauthorized");
 			}
 
-			const result = await db
-
-				.update(clinics)
-				.set(body)
-				.where(eq(clinics.id, id))
-				.returning();
+			const result = await withUserContext(user.id, async tx => {
+				return tx
+					.update(clinics)
+					.set(body)
+					.where(eq(clinics.id, id))
+					.returning();
+			});
 
 			if (result.length === 0) {
 				return status(404, 'Clinic not found');
@@ -169,29 +175,24 @@ export const clinicsController = new Elysia({ prefix: '/clinics' })
 	)
 	.delete(
 		'/:id',
-		async ({ params: { id }, status, profile }) => {
+		async ({ params: { id }, status, profile, user }) => {
 			const rules = defineAbilityFor(profile);
 			if (rules.cannot('delete', 'Clinic', id)) {
 				return status(401, "Unauthorized");
 			}
 
-			try {
-				const result = await db
+			const result = await withUserContext(user.id, async tx => {
+				return tx
 					.delete(clinics)
 					.where(eq(clinics.id, id))
 					.returning();
-				if (result.length === 0) {
-					return status(404, 'Clinic not found');
-				}
+			});
 
-				return { success: true, deletedId: result[0]!.id };
-			} catch (err) {
-				console.error(err)
+			if (result.length === 0) {
+				return status(404, 'Clinic not found');
 			}
 
-
-
-
+			return { success: true, deletedId: result[0]!.id };
 		},
 		{
 			isSignedIn: true,

@@ -117,7 +117,7 @@ export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
 
 	.post(
 		'/',
-		async ({ body }) => {
+		async ({ body, user }) => {
 
 			const payload = {
 				...body
@@ -128,8 +128,8 @@ export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
 				payload.govId = `${encryptedGovId.iv}:${encryptedGovId.data}`;
 			}
 
-			const result = await db.transaction(async () => {
-				const [p] = await db.insert(profile).values({
+			const result = await withUserContext(user.id, async (tx) => {
+				const [p] = await tx.insert(profile).values({
 					email: body.email,
 					name: body.name,
 					plan: body.plan,
@@ -138,7 +138,7 @@ export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
 				}).returning();
 
 				if (body.organizationId && p) {
-					await db.insert(profileOrganizationAccess).values({
+					await tx.insert(profileOrganizationAccess).values({
 						profileId: p?.id,
 						organizationId: body.organizationId,
 					})
@@ -150,6 +150,7 @@ export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
 			return result;
 		},
 		{
+			isSignedIn: true,
 			body: createBeneficiaryDTO,
 		}
 	)
@@ -188,11 +189,13 @@ export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
 
 	.delete(
 		'/:id',
-		async ({ params: { id }, status }) => {
-			const result = await db
-				.delete(profile)
-				.where(eq(profile.id, id))
-				.returning();
+		async ({ params: { id }, status, user }) => {
+			const result = await withUserContext(user.id, async tx => {
+				return tx
+					.delete(profile)
+					.where(eq(profile.id, id))
+					.returning();
+			});
 
 			if (result.length === 0) {
 				return status(404, 'profile not found');
@@ -201,6 +204,7 @@ export const beneficiariesController = new Elysia({ prefix: '/beneficiaries' })
 			return { success: true, deletedId: result[0]!.id };
 		},
 		{
+			isSignedIn: true,
 			params: t.Object({
 				id: t.String(),
 			}),

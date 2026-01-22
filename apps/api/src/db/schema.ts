@@ -203,5 +203,5 @@ export const auditLogs = pgTable('audit_logs', {
 	oldValues: jsonb('old_values'),
 	newValues: jsonb('new_values'),
 	changedAt: timestamp('changed_at').defaultNow(),
-	changedBy: text('changed_by').references(() => user.id).notNull()
+	changedBy: text('changed_by').default('Unknown user'),
 });
