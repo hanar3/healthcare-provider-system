@@ -1,3 +1,4 @@
+import { parseAsString, parseAsArrayOf, useQueryStates } from "nuqs";
 import { SearchCard } from "@/components/search-card";
 import { SearchHeader } from "@/components/search-header";
 import { Badge } from "@/components/ui/badge";
@@ -19,8 +20,8 @@ export const Route = createFileRoute("/search/")({
 		search: Record<string, unknown>,
 	): Partial<{ e: string; l: string }> => {
 		return {
-			e: String(search?.e),
-			l: String(search?.l),
+			e: search?.e ? String(search?.e) : "",
+			l: search?.l ? String(search?.l) : "",
 		} satisfies Partial<{ e: string; l: string }>;
 	},
 });
@@ -35,7 +36,6 @@ import {
 
 interface ClinicSpecialtiesProps {
 	specialties: { name: string; slug: string; id: string }[];
-	// Pass the user's active filter inputs here (e.g. from URL or State)
 	searchQuery?: string | string[];
 	maxVisible?: number;
 }
@@ -73,6 +73,7 @@ export function ClinicSpecialties({
 
 	if (!specialties.length) return null;
 
+	console.log(searchQuery);
 	return (
 		<div className="flex flex-wrap gap-1.5 items-center">
 			{visible.map((s) => {
@@ -122,10 +123,27 @@ export function ClinicSpecialties({
 	);
 }
 
+const searchParsers = {
+	specialties: parseAsArrayOf(parseAsString).withDefault([]),
+	address: parseAsString.withDefault(""),
+};
+
+const searchUrlKeys = {
+	specialties: "e",
+	address: "l",
+};
+
+export function useSearchParams() {
+	return useQueryStates(searchParsers, {
+		urlKeys: searchUrlKeys,
+	});
+}
+
 function RouteComponent() {
 	const search = useSearch({ from: "/search/" });
+	const [params, setParams] = useSearchParams();
 	const { data: searchResult } = useQuery(
-		searchQuery(search.e?.split(",") ?? [], search.l ?? ""),
+		searchQuery(params.specialties.filter(Boolean), params.address),
 	);
 
 	return (
@@ -138,17 +156,22 @@ function RouteComponent() {
 							specialties: search?.e?.split(","),
 							address: search.l,
 						}}
-						onSearch={(value) => { }}
+						onSearch={(value) => {
+							setParams({
+								specialties: value.specialties,
+								address: value.address,
+							});
+						}}
 					/>
 				</div>
 				<div className="flex flex-col gap-2 px-10 mt-4">
 					<h1 className="text-xl font-bold">Resultados da busca</h1>
 					<h1 className="text-gray-700">
-						Encontramos 10 resultados para a sua busca
+						Encontramos {searchResult?.total} resultados para a sua busca
 					</h1>
 				</div>
 				<div className="flex flex-col gap-2 px-10 mt-4">
-					{searchResult?.map((r) => (
+					{searchResult?.list?.map((r) => (
 						<Card key={r.id}>
 							<CardHeader>
 								<div className="flex gap-2 items-center">
@@ -168,9 +191,7 @@ function RouteComponent() {
 								<CardContent className="p-0 flex gap-1.5 flex-wrap">
 									<ClinicSpecialties
 										specialties={r.specialties}
-										searchQuery={
-											search?.e?.split(",").map(decodeURIComponent) ?? []
-										}
+										searchQuery={params.specialties.filter(Boolean)}
 										maxVisible={4}
 									/>
 								</CardContent>
