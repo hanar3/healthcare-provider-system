@@ -53,7 +53,10 @@ export function ClinicsSearchForm({
 										field.state.meta.isTouched && !field.state.meta.isValid;
 									return (
 										<Field data-invalid={isInvalid}>
-											<FieldLabel htmlFor={field.name}>
+											<FieldLabel
+												className="absolute -top-6"
+												htmlFor={field.name}
+											>
 												Especialidades
 											</FieldLabel>
 											<SelectPills
@@ -75,7 +78,7 @@ export function ClinicsSearchForm({
 								}}
 							/>
 						</FieldGroup>
-						<FieldGroup>
+						<FieldGroup className="relative">
 							<form.Field
 								name="address"
 								children={(field) => {
@@ -83,7 +86,12 @@ export function ClinicsSearchForm({
 										field.state.meta.isTouched && !field.state.meta.isValid;
 									return (
 										<Field data-invalid={isInvalid}>
-											<FieldLabel htmlFor={field.name}>Localização</FieldLabel>
+											<FieldLabel
+												className="absolute -top-6"
+												htmlFor={field.name}
+											>
+												Localização
+											</FieldLabel>
 
 											<div className="relative">
 												<MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
@@ -103,7 +111,7 @@ export function ClinicsSearchForm({
 								}}
 							/>
 						</FieldGroup>
-						<div className="flex items-end">
+						<div className="flex items-start">
 							<Button className="w-full h-10 px-8 bg-primary text-white font-bold">
 								<Search />
 								Buscar agora
@@ -208,7 +216,7 @@ export function DoctorsSearch({
 								}}
 							/>
 						</FieldGroup>
-						<div className="flex items-end">
+						<div className="flex items-center">
 							<Button className="w-full h-10 px-8 bg-primary text-white font-bold">
 								<Search />
 								Buscar agora
