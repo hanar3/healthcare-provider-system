@@ -108,7 +108,7 @@ export function SelectPills({
 							<span className="text-muted-foreground">{placeholder}</span>
 						)}
 					</div>
-					<div className="flex shrink-0 items-center gap-1 text-muted-foreground">
+					<div className="flex shrink-0 items-center gap-1 text-muted-foreground overflow-auto max-h-5">
 						{selectedValues.length > 0 && (
 							<div
 								onClick={handleClear}
@@ -177,4 +177,3 @@ export function SelectPills({
 		</Popover>
 	);
 }
-

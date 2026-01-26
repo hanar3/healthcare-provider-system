@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SearchIndexRouteImport } from './routes/search/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as DashboardOrganizationsRouteRouteImport } from './routes/dashboard/organizations/route'
 import { Route as DashboardSettingsIndexRouteImport } from './routes/dashboard/settings/index'
@@ -36,6 +37,11 @@ const DashboardRouteRoute = DashboardRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SearchIndexRoute = SearchIndexRouteImport.update({
+  id: '/search/',
+  path: '/search/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/dashboard/organizations': typeof DashboardOrganizationsRouteRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
+  '/search': typeof SearchIndexRoute
   '/dashboard/clinics/$clinicId': typeof DashboardClinicsClinicIdRouteRouteWithChildren
   '/dashboard/organizations/$organizationId': typeof DashboardOrganizationsOrganizationIdRouteRouteWithChildren
   '/dashboard/beneficiaries': typeof DashboardBeneficiariesIndexRoute
@@ -115,6 +122,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/search': typeof SearchIndexRoute
   '/dashboard/beneficiaries': typeof DashboardBeneficiariesIndexRoute
   '/dashboard/clinics': typeof DashboardClinicsIndexRoute
   '/dashboard/organizations': typeof DashboardOrganizationsIndexRoute
@@ -129,6 +137,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/dashboard/organizations': typeof DashboardOrganizationsRouteRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
+  '/search/': typeof SearchIndexRoute
   '/dashboard/clinics/$clinicId': typeof DashboardClinicsClinicIdRouteRouteWithChildren
   '/dashboard/organizations/$organizationId': typeof DashboardOrganizationsOrganizationIdRouteRouteWithChildren
   '/dashboard/beneficiaries/': typeof DashboardBeneficiariesIndexRoute
@@ -146,6 +155,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/dashboard/organizations'
     | '/dashboard/'
+    | '/search'
     | '/dashboard/clinics/$clinicId'
     | '/dashboard/organizations/$organizationId'
     | '/dashboard/beneficiaries'
@@ -159,6 +169,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/dashboard'
+    | '/search'
     | '/dashboard/beneficiaries'
     | '/dashboard/clinics'
     | '/dashboard/organizations'
@@ -172,6 +183,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/dashboard/organizations'
     | '/dashboard/'
+    | '/search/'
     | '/dashboard/clinics/$clinicId'
     | '/dashboard/organizations/$organizationId'
     | '/dashboard/beneficiaries/'
@@ -186,6 +198,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
+  SearchIndexRoute: typeof SearchIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -209,6 +222,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/search/': {
+      id: '/search/'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/': {
@@ -358,6 +378,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRouteRoute: DashboardRouteRouteWithChildren,
   LoginRoute: LoginRoute,
+  SearchIndexRoute: SearchIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

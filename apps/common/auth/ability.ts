@@ -16,7 +16,7 @@ interface UserPayload {
 }
 
 export function defineAbilityFor(user?: UserPayload | null) {
-	const { can, cannot, build } = new AbilityBuilder<AppAbility>(createMongoAbility);
+	const { cannot } = new AbilityBuilder<AppAbility>(createMongoAbility);
 	return defineAbility((can) => {
 		if (!user) return cannot("manage", "all");
 
@@ -24,13 +24,13 @@ export function defineAbilityFor(user?: UserPayload | null) {
 			can('manage', 'all');
 		}
 
-		if (user.orgAccessIds.length > 0) {
+		if (user.orgAccessIds?.length > 0) {
 			can(['read', 'update'], 'Organization', { id: { $in: user.orgAccessIds } });
 			can('manage', 'Beneficiary', { organizationId: { $in: user.orgAccessIds } });
 			cannot(['delete'], 'Organization');
 		}
 
-		if (user.clinicAccessIds.length > 0) {
+		if (user.clinicAccessIds?.length > 0) {
 			can(['read', 'update'], 'Clinic', { id: { $in: user.clinicAccessIds } });
 			can('manage', 'Doctor');
 			cannot(['delete', 'create'], 'Clinic');
