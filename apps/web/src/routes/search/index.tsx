@@ -73,7 +73,6 @@ export function ClinicSpecialties({
 
 	if (!specialties.length) return null;
 
-	console.log(searchQuery);
 	return (
 		<div className="flex flex-wrap gap-1.5 items-center">
 			{visible.map((s) => {
