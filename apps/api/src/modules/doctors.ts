@@ -149,7 +149,7 @@ export const doctorsController = new Elysia({ prefix: '/doctors' })
 
 	.post(
 		'/',
-		async ({ body, status }) => {
+		async ({ body, status, user }) => {
 			const payload = {
 				...body
 			};
@@ -159,36 +159,42 @@ export const doctorsController = new Elysia({ prefix: '/doctors' })
 				payload.govId = `${encryptedGovId.iv}:${encryptedGovId.data}`;
 			}
 
-			const result = await withUserContext(user.id, async (tx) => {
-				const [p] = await tx.insert(profile).values({
-					email: body.email,
-					name: body.name,
-					govId: payload.govId,
-					role: "doctor"
-				}).returning();
 
-				if (body.specialties && p) {
-					await db.insert(profileSpecialties).values(
-						body.specialties.map(s => {
-							return {
-								profileId: p.id,
-								specialtyId: s
-							}
+			try {
+				const result = await withUserContext(user.id, async (tx) => {
+					const [p] = await db.insert(profile).values({
+						email: body.email,
+						name: body.name,
+						govId: payload.govId,
+						role: "doctor"
+					}).returning();
+
+					if (body.specialties && p) {
+						await db.insert(profileSpecialties).values(
+							body.specialties.map(s => {
+								return {
+									profileId: p.id,
+									specialtyId: s
+								}
+							})
+						)
+					}
+
+					if (body.clinicId && p) {
+						await tx.insert(profileClinicAccess).values({
+							profileId: p?.id,
+							clinicId: body.clinicId,
 						})
-					)
-				}
+					}
 
-				if (body.clinicId && p) {
-					await tx.insert(profileClinicAccess).values({
-						profileId: p?.id,
-						clinicId: body.clinicId,
-					})
-				}
+					return p;
+				});
 
-				return p;
-			});
+				return result;
+			} catch (err) {
+				console.error(err);
+			}
 
-			return result;
 		},
 		{
 			isSignedIn: true,

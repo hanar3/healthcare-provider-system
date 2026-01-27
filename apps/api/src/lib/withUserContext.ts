@@ -14,6 +14,6 @@ export async function withUserContext<T>(
 			sql`SELECT set_config('app.current_user_id', ${userId}, true)`
 		);
 
-		return await callback(tx);
+		return callback(tx);
 	});
 }
